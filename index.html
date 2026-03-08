@@ -2,154 +2,139 @@
 <html lang="vi">
 <head>
 <meta charset="UTF-8">
-<title>8.3 - Garden of Light</title>
+<title>8/3 Bloom Wall</title>
 
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display&family=Quicksand:wght@300;500&display=swap" rel="stylesheet">
 
-<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500&family=Quicksand:wght@300;500&display=swap" rel="stylesheet">
-
-<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
 
 <style>
 
-:root{
---pink:#ffc7d9;
---gold:#ffe8a3;
---bg:#0c0a12;
-}
-
-*{
+body{
 margin:0;
-padding:0;
-box-sizing:border-box;
+overflow:hidden;
+background:#0a0710;
+color:white;
+font-family:'Quicksand';
 cursor:none;
 }
 
-body{
-background:var(--bg);
-color:white;
-font-family:'Quicksand';
-overflow:hidden;
-}
+/* canvas */
 
-#canvas{
+canvas{
 position:fixed;
 inset:0;
 z-index:1;
 }
 
-/* message card */
+/* message */
 
-.stage{
+.message{
+
 position:fixed;
-inset:0;
-display:flex;
-justify-content:center;
-align-items:center;
-z-index:10;
-pointer-events:none;
-}
+top:50%;
+left:50%;
 
-.card{
+transform:translate(-50%,-50%);
 
-position:absolute;
-width:80%;
-max-width:600px;
+background:rgba(255,255,255,0.08);
 
-background:rgba(255,255,255,0.05);
 backdrop-filter:blur(20px);
 
-border-radius:30px;
+padding:35px 45px;
 
-padding:45px;
+border-radius:20px;
 
 text-align:center;
+
+max-width:500px;
 
 opacity:0;
 visibility:hidden;
 
-box-shadow:0 30px 80px rgba(0,0,0,0.6);
+z-index:10;
 
 }
 
-h2{
+.message h2{
 font-family:'Playfair Display';
-font-size:38px;
-color:var(--pink);
-margin-bottom:20px;
+color:#ffb6d9;
 }
 
-p{
+.message p{
 font-size:18px;
-line-height:1.8;
-opacity:0.9;
-}
-
-.signature{
-margin-top:30px;
-font-size:22px;
-color:var(--gold);
-font-family:'Playfair Display';
-text-align:right;
+line-height:1.7;
 }
 
 /* cursor */
 
 #dot{
+
 width:6px;
 height:6px;
+
 background:white;
+
 border-radius:50%;
+
 position:fixed;
-z-index:10000;
+
 pointer-events:none;
+
+z-index:1000;
+
 }
 
 #ring{
+
 width:40px;
 height:40px;
-border:1px solid var(--pink);
+
+border:1px solid pink;
+
 border-radius:50%;
+
 position:fixed;
+
 pointer-events:none;
-z-index:9999;
+
+z-index:999;
+
 }
 
-/* entrance */
+/* intro */
 
-.entrance{
+.intro{
 
 position:fixed;
 inset:0;
-background:#000;
+
 display:flex;
-flex-direction:column;
-justify-content:center;
 align-items:center;
+justify-content:center;
 
-z-index:2000;
+flex-direction:column;
 
-transition:1.2s;
+background:black;
 
-}
-
-.entrance.hide{
-opacity:0;
-pointer-events:none;
-}
-
-.flower{
-
-font-size:100px;
-cursor:pointer;
-transition:.5s;
-filter:drop-shadow(0 0 20px pink);
+z-index:100;
 
 }
 
-.flower:hover{
-transform:scale(1.2) rotate(10deg);
+.intro h1{
+
+font-family:'Playfair Display';
+
+color:#ffb6d9;
+
+}
+
+.intro p{
+
+opacity:.6;
+
+letter-spacing:4px;
+
 }
 
 </style>
@@ -157,191 +142,230 @@ transform:scale(1.2) rotate(10deg);
 
 <body>
 
-<div id="canvas"></div>
+<canvas id="canvas"></canvas>
 
 <div id="dot"></div>
 <div id="ring"></div>
 
-<div class="entrance" id="entrance">
-<div class="flower" onclick="start()">🌸</div>
-<p style="margin-top:20px;letter-spacing:4px;color:pink;">CHẠM ĐỂ VÀO KHU VƯỜN</p>
+<div class="intro" id="intro">
+<h1>🌸 8 / 3 🌸</h1>
+<p>CLICK ĐỂ TRỒNG HOA</p>
 </div>
 
-<main class="stage">
-
-<div class="card">
-<h2>8 / 3</h2>
-<p>Gửi đến những cô gái tuyệt vời của lớp.</p>
-<p>Một ngày nhỏ, nhưng mang theo rất nhiều lời chúc.</p>
-</div>
-
-<div class="card">
-<p>Cảm ơn vì đã làm cho lớp học trở nên vui hơn.</p>
-<p>Nhiều tiếng cười hơn.</p>
-<p>Và đôi khi… cũng ồn hơn một chút 😆</p>
-</div>
-
-<div class="card">
-<p>Mỗi người đều có một cách tỏa sáng rất riêng.</p>
-<p>Có người mạnh mẽ.</p>
-<p>Có người dịu dàng.</p>
-<p>Nhưng tất cả đều rất đáng quý.</p>
-</div>
-
-<div class="card">
-<p>Chúc các bạn luôn</p>
-<p><b>tự tin hơn</b></p>
-<p><b>hạnh phúc hơn</b></p>
-<p>và luôn được yêu thương.</p>
-</div>
-
-<div class="card">
-<h2>Happy Women's Day 🌸</h2>
-<p>Chúc tất cả các bạn nữ lớp mình</p>
-<p>luôn rạng rỡ như những bông hoa mùa xuân.</p>
-
-<div class="signature">
-From Duy Quang
-</div>
-
-</div>
-
-</main>
+<div class="message" id="message"></div>
 
 <script>
 
-/* THREE */
+/* canvas */
 
-const scene=new THREE.Scene()
+const canvas=document.getElementById("canvas")
+const ctx=canvas.getContext("2d")
 
-const camera=new THREE.PerspectiveCamera(
-65,
-window.innerWidth/window.innerHeight,
-0.1,
-1000
+canvas.width=window.innerWidth
+canvas.height=window.innerHeight
+
+/* flowers */
+
+const flowers=[]
+
+const messages=[
+
+"Cảm ơn vì đã làm cho lớp mình vui hơn mỗi ngày 🌷",
+
+"Chúc các bạn nữ luôn tự tin và tỏa sáng ✨",
+
+"Mong rằng mỗi ngày của các bạn đều thật nhiều niềm vui 🌸",
+
+"Các bạn chính là những bông hoa đẹp nhất của lớp 🌺",
+
+"Happy Women's Day 💐"
+
+]
+
+class Flower{
+
+constructor(x,y){
+
+this.x=x
+this.y=y
+
+this.size=0
+this.max=40+Math.random()*30
+
+this.petals=5+Math.floor(Math.random()*3)
+
+this.rotation=Math.random()*Math.PI
+
+this.color=`hsl(${320+Math.random()*40},80%,70%)`
+
+}
+
+draw(){
+
+ctx.save()
+
+ctx.translate(this.x,this.y)
+
+ctx.rotate(this.rotation)
+
+for(let i=0;i<this.petals;i++){
+
+ctx.rotate(Math.PI*2/this.petals)
+
+ctx.beginPath()
+
+ctx.ellipse(
+0,
+this.size,
+this.size/2,
+this.size,
+0,
+0,
+Math.PI*2
 )
 
-const renderer=new THREE.WebGLRenderer({alpha:true,antialias:true})
-renderer.setSize(window.innerWidth,window.innerHeight)
+ctx.fillStyle=this.color
 
-document.getElementById("canvas").appendChild(renderer.domElement)
-
-/* fireflies */
-
-const fireflyGeo=new THREE.BufferGeometry()
-
-const count=600
-
-const pos=new Float32Array(count*3)
-
-for(let i=0;i<count*3;i++){
-
-pos[i]=(Math.random()-0.5)*80
+ctx.fill()
 
 }
 
-fireflyGeo.setAttribute(
-"position",
-new THREE.BufferAttribute(pos,3)
-)
+ctx.beginPath()
 
-const fireflyMat=new THREE.PointsMaterial({
-color:0xfff4a3,
-size:0.25,
-transparent:true,
-opacity:0.8
+ctx.arc(0,0,this.size/3,0,Math.PI*2)
+
+ctx.fillStyle="#ffe28a"
+
+ctx.fill()
+
+ctx.restore()
+
+}
+
+grow(){
+
+if(this.size<this.max){
+
+this.size+=0.8
+
+}
+
+}
+
+}
+
+/* pollen particles */
+
+const pollen=[]
+
+class Pollen{
+
+constructor(){
+
+this.x=Math.random()*canvas.width
+this.y=Math.random()*canvas.height
+
+this.vy=0.2+Math.random()*0.5
+
+}
+
+update(){
+
+this.y+=this.vy
+
+if(this.y>canvas.height){
+
+this.y=0
+
+}
+
+}
+
+draw(){
+
+ctx.fillStyle="rgba(255,230,120,0.6)"
+
+ctx.beginPath()
+
+ctx.arc(this.x,this.y,2,0,Math.PI*2)
+
+ctx.fill()
+
+}
+
+}
+
+for(let i=0;i<200;i++){
+
+pollen.push(new Pollen())
+
+}
+
+/* click */
+
+let clickCount=0
+
+window.addEventListener("click",e=>{
+
+document.getElementById("intro").style.display="none"
+
+flowers.push(new Flower(e.clientX,e.clientY))
+
+showMessage()
+
 })
 
-const fireflies=new THREE.Points(fireflyGeo,fireflyMat)
+/* message */
 
-scene.add(fireflies)
+function showMessage(){
 
-/* petals */
+const box=document.getElementById("message")
 
-const petalGeo=new THREE.BufferGeometry()
+box.innerHTML="<p>"+messages[clickCount%messages.length]+"</p>"
 
-const petals=1200
-
-const petalPos=new Float32Array(petals*3)
-
-for(let i=0;i<petals*3;i++){
-
-petalPos[i]=(Math.random()-0.5)*120
-
-}
-
-petalGeo.setAttribute(
-"position",
-new THREE.BufferAttribute(petalPos,3)
-)
-
-const petalMat=new THREE.PointsMaterial({
-color:0xffc7d9,
-size:0.2,
-transparent:true
-})
-
-const petalField=new THREE.Points(petalGeo,petalMat)
-
-scene.add(petalField)
-
-/* camera */
-
-camera.position.z=15
-
-/* cards */
-
-const cards=document.querySelectorAll(".card")
-
-let current=-1
-let moving=false
-
-function next(){
-
-if(moving)return
-
-const n=current+1
-
-if(n>=cards.length)return
-
-moving=true
-
-if(current>=0){
-
-gsap.to(cards[current],{
-opacity:0,
-y:-80,
-duration:0.6,
-onComplete:()=>{
-cards[current].style.visibility="hidden"
-}
-})
-
-}
-
-current=n
-
-const card=cards[current]
-
-card.style.visibility="visible"
+box.style.visibility="visible"
 
 gsap.fromTo(
-card,
-{opacity:0,y:80},
-{opacity:1,y:0,duration:1.2,onComplete:()=>moving=false}
+box,
+{opacity:0,y:40},
+{opacity:1,y:0,duration:0.8}
 )
 
+gsap.to(box,{
+opacity:0,
+delay:3,
+duration:1
+})
+
+clickCount++
+
 }
 
-function start(){
+/* animation */
 
-document.getElementById("entrance").classList.add("hide")
+function animate(){
 
-setTimeout(next,800)
+ctx.clearRect(0,0,canvas.width,canvas.height)
+
+pollen.forEach(p=>{
+
+p.update()
+p.draw()
+
+})
+
+flowers.forEach(f=>{
+
+f.grow()
+f.draw()
+
+})
+
+requestAnimationFrame(animate)
 
 }
 
-window.addEventListener("click",next)
+animate()
 
 /* cursor */
 
@@ -355,22 +379,6 @@ gsap.to(dot,{x:e.clientX,y:e.clientY,duration:0})
 gsap.to(ring,{x:e.clientX-20,y:e.clientY-20,duration:.2})
 
 })
-
-/* animate */
-
-function animate(){
-
-requestAnimationFrame(animate)
-
-fireflies.rotation.y+=0.0005
-
-petalField.rotation.y+=0.0002
-
-renderer.render(scene,camera)
-
-}
-
-animate()
 
 </script>
 
