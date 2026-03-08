@@ -2,34 +2,26 @@
 <html lang="vi">
 <head>
 <meta charset="UTF-8">
-<title>8/3 Bloom Wall</title>
+<title>8/3 Constellation</title>
 
-<link href="https://fonts.googleapis.com/css2?family=Playfair+Display&family=Quicksand:wght@300;500&display=swap" rel="stylesheet">
-
-<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;600&display=swap" rel="stylesheet">
 
 <style>
 
 body{
 margin:0;
+background:#07040d;
 overflow:hidden;
-background:#0a0710;
+font-family:Montserrat;
 color:white;
-font-family:'Quicksand';
 cursor:none;
 }
 
-/* canvas */
-
 canvas{
-position:fixed;
-inset:0;
-z-index:1;
+display:block;
 }
 
-/* message */
-
-.message{
+#text{
 
 position:fixed;
 top:50%;
@@ -37,41 +29,21 @@ left:50%;
 
 transform:translate(-50%,-50%);
 
-background:rgba(255,255,255,0.08);
+font-size:40px;
+font-weight:600;
 
-backdrop-filter:blur(20px);
-
-padding:35px 45px;
-
-border-radius:20px;
+opacity:0;
 
 text-align:center;
 
-max-width:500px;
-
-opacity:0;
-visibility:hidden;
-
-z-index:10;
+pointer-events:none;
 
 }
 
-.message h2{
-font-family:'Playfair Display';
-color:#ffb6d9;
-}
+#cursor{
 
-.message p{
-font-size:18px;
-line-height:1.7;
-}
-
-/* cursor */
-
-#dot{
-
-width:6px;
-height:6px;
+width:8px;
+height:8px;
 
 background:white;
 
@@ -81,60 +53,6 @@ position:fixed;
 
 pointer-events:none;
 
-z-index:1000;
-
-}
-
-#ring{
-
-width:40px;
-height:40px;
-
-border:1px solid pink;
-
-border-radius:50%;
-
-position:fixed;
-
-pointer-events:none;
-
-z-index:999;
-
-}
-
-/* intro */
-
-.intro{
-
-position:fixed;
-inset:0;
-
-display:flex;
-align-items:center;
-justify-content:center;
-
-flex-direction:column;
-
-background:black;
-
-z-index:100;
-
-}
-
-.intro h1{
-
-font-family:'Playfair Display';
-
-color:#ffb6d9;
-
-}
-
-.intro p{
-
-opacity:.6;
-
-letter-spacing:4px;
-
 }
 
 </style>
@@ -142,204 +60,145 @@ letter-spacing:4px;
 
 <body>
 
-<canvas id="canvas"></canvas>
-
-<div id="dot"></div>
-<div id="ring"></div>
-
-<div class="intro" id="intro">
-<h1>🌸 8 / 3 🌸</h1>
-<p>CLICK ĐỂ TRỒNG HOA</p>
-</div>
-
-<div class="message" id="message"></div>
+<canvas id="c"></canvas>
+<div id="text"></div>
+<div id="cursor"></div>
 
 <script>
 
-/* canvas */
-
-const canvas=document.getElementById("canvas")
+const canvas=document.getElementById("c")
 const ctx=canvas.getContext("2d")
 
-canvas.width=window.innerWidth
-canvas.height=window.innerHeight
+canvas.width=innerWidth
+canvas.height=innerHeight
 
-/* flowers */
+let mouse={x:0,y:0}
 
-const flowers=[]
+document.addEventListener("mousemove",e=>{
 
-const messages=[
+mouse.x=e.clientX
+mouse.y=e.clientY
 
-"Cảm ơn vì đã làm cho lớp mình vui hơn mỗi ngày 🌷",
+cursor.style.left=e.clientX+"px"
+cursor.style.top=e.clientY+"px"
 
-"Chúc các bạn nữ luôn tự tin và tỏa sáng ✨",
+})
 
-"Mong rằng mỗi ngày của các bạn đều thật nhiều niềm vui 🌸",
+/* particle */
 
-"Các bạn chính là những bông hoa đẹp nhất của lớp 🌺",
-
-"Happy Women's Day 💐"
-
-]
-
-class Flower{
-
-constructor(x,y){
-
-this.x=x
-this.y=y
-
-this.size=0
-this.max=40+Math.random()*30
-
-this.petals=5+Math.floor(Math.random()*3)
-
-this.rotation=Math.random()*Math.PI
-
-this.color=`hsl(${320+Math.random()*40},80%,70%)`
-
-}
-
-draw(){
-
-ctx.save()
-
-ctx.translate(this.x,this.y)
-
-ctx.rotate(this.rotation)
-
-for(let i=0;i<this.petals;i++){
-
-ctx.rotate(Math.PI*2/this.petals)
-
-ctx.beginPath()
-
-ctx.ellipse(
-0,
-this.size,
-this.size/2,
-this.size,
-0,
-0,
-Math.PI*2
-)
-
-ctx.fillStyle=this.color
-
-ctx.fill()
-
-}
-
-ctx.beginPath()
-
-ctx.arc(0,0,this.size/3,0,Math.PI*2)
-
-ctx.fillStyle="#ffe28a"
-
-ctx.fill()
-
-ctx.restore()
-
-}
-
-grow(){
-
-if(this.size<this.max){
-
-this.size+=0.8
-
-}
-
-}
-
-}
-
-/* pollen particles */
-
-const pollen=[]
-
-class Pollen{
+class Particle{
 
 constructor(){
 
 this.x=Math.random()*canvas.width
 this.y=Math.random()*canvas.height
 
-this.vy=0.2+Math.random()*0.5
+this.vx=(Math.random()-.5)*0.5
+this.vy=(Math.random()-.5)*0.5
 
 }
 
-update(){
+move(){
 
+this.x+=this.vx
 this.y+=this.vy
 
-if(this.y>canvas.height){
-
-this.y=0
-
-}
+if(this.x<0||this.x>canvas.width)this.vx*=-1
+if(this.y<0||this.y>canvas.height)this.vy*=-1
 
 }
 
 draw(){
 
-ctx.fillStyle="rgba(255,230,120,0.6)"
+ctx.fillStyle="white"
 
 ctx.beginPath()
-
-ctx.arc(this.x,this.y,2,0,Math.PI*2)
-
+ctx.arc(this.x,this.y,1.6,0,Math.PI*2)
 ctx.fill()
 
 }
 
 }
 
-for(let i=0;i<200;i++){
+const particles=[]
 
-pollen.push(new Pollen())
+for(let i=0;i<300;i++){
+
+particles.push(new Particle())
 
 }
 
-/* click */
+/* connect lines */
 
-let clickCount=0
+function connect(){
 
-window.addEventListener("click",e=>{
+for(let a=0;a<particles.length;a++){
 
-document.getElementById("intro").style.display="none"
+for(let b=a;b<particles.length;b++){
 
-flowers.push(new Flower(e.clientX,e.clientY))
+let dx=particles[a].x-particles[b].x
+let dy=particles[a].y-particles[b].y
 
-showMessage()
+let dist=Math.sqrt(dx*dx+dy*dy)
 
-})
+if(dist<90){
 
-/* message */
+ctx.strokeStyle="rgba(255,180,230,"+(1-dist/90)+")"
+
+ctx.beginPath()
+
+ctx.moveTo(particles[a].x,particles[a].y)
+ctx.lineTo(particles[b].x,particles[b].y)
+
+ctx.stroke()
+
+}
+
+}
+
+}
+
+}
+
+/* text morph */
+
+const messages=[
+
+"8 . 3",
+
+"Happy Women's Day",
+
+"To the amazing girls",
+
+"in our class ✨"
+
+]
+
+let msgIndex=0
 
 function showMessage(){
 
-const box=document.getElementById("message")
+text.innerHTML=messages[msgIndex]
 
-box.innerHTML="<p>"+messages[clickCount%messages.length]+"</p>"
+text.style.opacity=1
 
-box.style.visibility="visible"
+setTimeout(()=>{
 
-gsap.fromTo(
-box,
-{opacity:0,y:40},
-{opacity:1,y:0,duration:0.8}
-)
+text.style.opacity=0
 
-gsap.to(box,{
-opacity:0,
-delay:3,
-duration:1
-})
+msgIndex++
 
-clickCount++
+if(msgIndex<messages.length){
+
+setTimeout(showMessage,1500)
 
 }
+
+},2500)
+
+}
+
+setTimeout(showMessage,4000)
 
 /* animation */
 
@@ -347,38 +206,20 @@ function animate(){
 
 ctx.clearRect(0,0,canvas.width,canvas.height)
 
-pollen.forEach(p=>{
+particles.forEach(p=>{
 
-p.update()
+p.move()
 p.draw()
 
 })
 
-flowers.forEach(f=>{
-
-f.grow()
-f.draw()
-
-})
+connect()
 
 requestAnimationFrame(animate)
 
 }
 
 animate()
-
-/* cursor */
-
-const dot=document.getElementById("dot")
-const ring=document.getElementById("ring")
-
-document.addEventListener("mousemove",e=>{
-
-gsap.to(dot,{x:e.clientX,y:e.clientY,duration:0})
-
-gsap.to(ring,{x:e.clientX-20,y:e.clientY-20,duration:.2})
-
-})
 
 </script>
 
