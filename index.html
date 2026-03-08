@@ -2,13 +2,14 @@
 <html lang="vi">
 <head>
     <meta charset="UTF-8">
-    <title>12/9 Eternal Bloom - Symphony of Light</title>
-    <link href="https://fonts.googleapis.com/css2?family=Cinzel&family=Montserrat:wght@200;400&family=Playfair+Display:italic@1&display=swap" rel="stylesheet">
+    <title>12/9 Eternal Symphony - Luminance Edition</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&family=Montserrat:wght@200;400&family=Playfair+Display:italic@1&display=swap" rel="stylesheet">
     <style>
         :root {
             --gold: #ffcf7d;
             --pink: #ff85a2;
-            --dark: #020204; /* Tối hơn để nổi bật hiệu ứng sáng */
+            --dark: #030306; /* Tối hơn chút để nổi bật hiệu ứng nền */
+            --sub-white: rgba(255, 255, 255, 0.9);
         }
 
         body {
@@ -26,8 +27,8 @@
             top: 0;
             left: 0;
             z-index: 1;
-            /* Thêm filter để tăng độ tương phản và rực rỡ */
-            filter: contrast(110%) brightness(110%) saturate(120%);
+            /* Thêm chút blur nhẹ cho nền để tạo hiệu ứng 'mặt nước' */
+            filter: contrast(110%) brightness(105%);
         }
 
         /* UI Layers */
@@ -38,10 +39,10 @@
             pointer-events: none;
         }
 
-        /* Tên thành viên dưới mỗi bông hoa */
+        /* Tên thành viên */
         .member-name {
             position: absolute;
-            font-size: 10px; /* Nhỏ hơn chút để tinh tế */
+            font-size: 10px; /* Nhỏ hơn chút cho tinh tế */
             letter-spacing: 4px;
             text-transform: uppercase;
             color: var(--gold);
@@ -49,16 +50,17 @@
             opacity: 0;
             text-shadow: 0 0 15px rgba(255, 207, 125, 0.6);
             white-space: nowrap;
-            transition: all 1s ease;
+            transition: opacity 1.5s ease, transform 1s ease;
         }
 
-        /* Phụ đề lời chúc phía dưới */
+        /* Phụ đề lời chúc */
         #subtitle-container {
             position: fixed;
-            bottom: 10vh; /* Cách đáy 10% chiều cao màn hình */
+            bottom: clamp(60px, 8vh, 100px); /* Tự động điều chỉnh độ cao */
             left: 50%;
             transform: translateX(-50%);
-            width: 80%;
+            width: 85%;
+            max-width: 800px;
             text-align: center;
             z-index: 20;
         }
@@ -66,13 +68,15 @@
         #wish-subtitle {
             font-family: 'Playfair Display', serif;
             font-style: italic;
-            font-size: clamp(16px, 2vw, 22px); /* Tự điều chỉnh kích thước */
-            color: rgba(255, 255, 255, 0.9);
-            line-height: 1.8;
+            font-size: clamp(16px, 2vw, 20px); /* Responsive font size */
+            color: var(--sub-white);
+            line-height: 1.7;
             opacity: 0;
-            transform: translateY(30px);
-            text-shadow: 0 2px 15px rgba(0,0,0,0.8);
-            transition: all 1.2s cubic-bezier(0.19, 1, 0.22, 1);
+            transform: translateY(20px);
+            text-shadow: 0 2px 15px rgba(0,0,0,0.7);
+            /* Tạo background mờ nhẹ cho chữ dễ đọc */
+            background: radial-gradient(circle, rgba(0,0,0,0.5) 0%, transparent 70%);
+            padding: 10px 20px;
         }
 
         /* Finale Elements */
@@ -86,23 +90,25 @@
 
         .date-title {
             font-family: 'Cinzel', serif;
-            font-size: clamp(80px, 15vw, 160px);
-            background: linear-gradient(to bottom, #fff 20%, var(--gold) 80%);
+            font-weight: 700;
+            font-size: clamp(80px, 15vw, 150px);
+            background: linear-gradient(to bottom, #fff, var(--gold), var(--pink));
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             opacity: 0;
-            filter: blur(30px);
+            filter: blur(25px);
             margin: 0;
-            text-shadow: 0 0 50px rgba(255, 207, 125, 0.3);
+            /* Hiệu ứng thở (Breathing) */
+            animation: breatheTitle 10s infinite 3s;
         }
 
         .subtitle-final {
-            letter-spacing: 20px;
-            font-size: 11px;
+            letter-spacing: 18px;
+            font-size: clamp(8px, 1.2vw, 12px);
             color: var(--pink);
             opacity: 0;
             margin-top: -15px;
-            text-transform: uppercase;
+            text-shadow: 0 0 10px var(--pink);
         }
 
         #hint {
@@ -112,14 +118,20 @@
             text-align: center;
             font-size: 9px;
             letter-spacing: 6px;
-            opacity: 0.6;
+            opacity: 0.5;
             color: var(--gold);
-            animation: pulseHint 2.5s infinite;
+            animation: hintPulse 3s infinite;
         }
 
-        @keyframes pulseHint {
-            0%, 100% { opacity: 0.3; }
-            50% { opacity: 0.8; }
+        /* Keyframes */
+        @keyframes breatheTitle {
+            0%, 100% { transform: scale(1); filter: blur(0px) drop-shadow(0 0 20px var(--gold)); }
+            50% { transform: scale(1.03); filter: blur(0px) drop-shadow(0 0 40px var(--pink)); }
+        }
+
+        @keyframes hintPulse {
+            0%, 100% { opacity: 0.2; }
+            50% { opacity: 0.7; }
         }
     </style>
 </head>
@@ -140,12 +152,12 @@
     </div>
 </div>
 
-<div id="hint">CLICK TO AWAKEN THE LIGHT</div>
+<div id="hint">CHẠM NHẸ ĐỂ KHỞI ĐẦU SYMPHONY</div>
 
 <script>
 /**
- * THE 12/9 SYMPHONY - ADVANCED EFFECTS VERSION
- * Tích hợp Noise Physics, Composite Blooming, và Particle Memories
+ * THE 12/9 SYMPHONY - LUMINANCE EDITION
+ * Tập trung vào hiệu ứng ánh sáng và tương tác
  */
 
 const canvas = document.getElementById('canvas');
@@ -156,9 +168,9 @@ const wishSubtitle = document.getElementById('wish-subtitle');
 let width, height, centerX, centerY;
 let particles = [];
 let flowers = [];
+let caustics = []; // Hiệu ứng quầng sáng nền
 let frame = 0;
 let mouse = { x: -1000, y: -1000 };
-let isFinale = false;
 
 const data = [
     { name: "Huyền My", wish: "Mong nụ cười của bạn luôn rạng rỡ như đóa hướng dương đón nắng." },
@@ -180,26 +192,6 @@ const data = [
     { name: "Diễm Quỳnh", wish: "Vẻ đẹp của bạn không chỉ ở vẻ ngoài mà còn ở trái tim ấm áp." }
 ];
 
-// Hàm Simplex Noise đơn giản để tạo chuyển động hữu cơ
-const noise = (function() {
-    const p = new Uint8Array(512);
-    for (let i = 0; i < 512; i++) p[i] = i & 255;
-    for (let i = 0; i < 255; i++) {
-        const r = (Math.random() * (256 - i) | 0) + i;
-        const tmp = p[i]; p[i] = p[r]; p[r] = tmp;
-        p[i + 256] = p[i];
-    }
-    function grad(hash, x) {
-        return (hash & 1) === 0 ? x : -x;
-    }
-    return function(x) {
-        const X = (x | 0) & 255;
-        x -= x | 0;
-        const u = x * x * x * (x * (x * 6 - 15) + 10);
-        return (grad(p[X], x) * (1 - u) + grad(p[X + 1], x - 1) * u) * 2;
-    }
-})();
-
 function init() {
     width = window.innerWidth;
     height = window.innerHeight;
@@ -207,102 +199,96 @@ function init() {
     centerY = height / 2;
     canvas.width = width;
     canvas.height = height;
+
+    // Khởi tạo 5 quầng sáng nền
+    caustics = [];
+    for(let i=0; i<5; i++) {
+        caustics.push({
+            x: Math.random() * width,
+            y: Math.random() * height,
+            r: 200 + Math.random() * 300,
+            vx: (Math.random() - 0.5) * 0.2,
+            vy: (Math.random() - 0.5) * 0.2,
+            opacity: 0.03 + Math.random() * 0.04
+        });
+    }
 }
 
 window.addEventListener('resize', init);
 init();
 
-// --- Hệ thống bụi vàng hữu cơ (Noise Particles) ---
+// --- Hệ thống bụi vàng tương tác (Interactive Fairy Dust) ---
 class Particle {
-    constructor(x, y, isSpecial = false, isMemory = false) {
-        this.isMemory = isMemory;
+    constructor(x, y, isSpecial = false) {
+        this.isSpecial = isSpecial;
         this.reset(x, y, isSpecial);
     }
     reset(x, y, isSpecial) {
         this.x = x || Math.random() * width;
         this.y = y || Math.random() * height;
-        // Sử dụng Noise để quyết định vận tốc ban đầu
-        const nFactor = noise(this.x * 0.005 + frame * 0.01);
-        this.vx = (Math.random() - 0.5) * 0.5 + nFactor * 0.2;
-        this.vy = (Math.random() - 0.5) * 0.5 - Math.random() * 0.3; // Xu hướng bay lên nhẹ
-        this.life = isSpecial ? 1 + Math.random() * 0.5 : 1;
-        this.decay = isSpecial ? 0.015 : Math.random() * 0.004 + 0.001;
-        this.size = isSpecial ? Math.random() * 4 + 1.5 : Math.random() * 1.5;
-        this.baseSize = this.size;
-        
-        if (this.isMemory) {
-            this.color = '#fff';
-            this.decay = 0.005;
-            this.vx *= 2;
-            this.vy -= 1; // Bay lên nhanh hơn
-        } else {
-            this.color = isSpecial ? '#ffcf7d' : (Math.random() > 0.6 ? '#ff85a2' : '#fff');
-        }
-        this.angle = Math.random() * Math.PI * 2;
+        this.vx = (Math.random() - 0.5) * 0.8;
+        this.vy = (Math.random() - 0.5) * 0.8;
+        this.life = 1;
+        this.decay = Math.random() * 0.005 + 0.003;
+        // Bụi click to hơn và sáng hơn
+        this.size = isSpecial ? Math.random() * 2.5 + 1.5 : Math.random() * 1.3;
+        this.color = isSpecial ? '#ffcf7d' : (Math.random() > 0.6 ? '#ff85a2' : '#fff');
     }
     update() {
-        // Áp dụng Noise Physics để tạo chuyển động lơ lửng
-        if (!isFinale && !this.isMemory) {
-            const force = noise(this.x * 0.002 + frame * 0.001) * 0.1;
-            this.vx += Math.cos(this.angle) * force;
-            this.vy += Math.sin(this.angle) * force;
-            this.angle += 0.02;
-        } else if (isFinale) {
-            // Hút mạnh về tâm
-            this.vx += (centerX - this.x) * 0.001;
-            this.vy += (centerY - this.y) * 0.001;
+        // Tương tác vật lý: Bị chuột 'đẩy' ra xa
+        let dx = this.x - mouse.x;
+        let dy = this.y - mouse.y;
+        let dist = Math.sqrt(dx*dx + dy*dy);
+        if (dist < 130 && mouse.x > 0) {
+            let force = (130 - dist) / 130;
+            let angle = Math.atan2(dy, dx);
+            this.vx += Math.cos(angle) * force * 0.06;
+            this.vy += Math.sin(angle) * force * 0.06;
         }
 
         this.x += this.vx;
         this.y += this.vy;
-        this.life -= this.decay;
-        this.size = this.baseSize * this.life; // Hạt nhỏ dần
+        
+        // Thêm lực ma sát nhẹ
+        this.vx *= 0.99;
+        this.vy *= 0.99;
 
-        if (this.life <= 0 && !this.isMemory) this.reset();
+        this.life -= this.decay;
+        if (this.life <= 0) {
+            if (this.isSpecial) particles.splice(particles.indexOf(this), 1); // Bụi click biến mất
+            else this.reset(); // Bụi nền reset
+        }
     }
     draw() {
         ctx.globalAlpha = this.life;
         ctx.fillStyle = this.color;
         
-        // Hiệu ứng phát sáng mạnh (Bloom)
-        if (this.size > 1.2 || this.isMemory) {
-            ctx.shadowBlur = 15 * this.life;
+        if (this.isSpecial) {
+            ctx.shadowBlur = 10;
             ctx.shadowColor = this.color;
         }
         
         ctx.beginPath();
-        if (this.size > 2) {
-            // Vẽ hình ngôi sao nhỏ cho hạt lớn
-            for(let i=0; i<5; i++) {
-                const a = (i/5) * Math.PI*2 - Math.PI/2;
-                const r = this.size;
-                ctx.lineTo(this.x + Math.cos(a)*r, this.y + Math.sin(a)*r);
-                const a2 = a + Math.PI/5;
-                const r2 = r*0.4;
-                ctx.lineTo(this.x + Math.cos(a2)*r2, this.y + Math.sin(a2)*r2);
-            }
-        } else {
-            ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
-        }
+        ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
         ctx.fill();
         ctx.shadowBlur = 0;
     }
 }
 
-// --- Hệ thống Hoa Hữu Cơ (Organic Bloom) ---
-class OrganicFlower {
+// --- Hệ thống Hoa H huyền ảo ---
+class EtherealFlower {
     constructor(index, person) {
         this.index = index;
         this.name = person.name;
         
-        const radius = Math.min(width, height) * 0.36;
+        const radius = Math.min(width, height) * 0.35;
         const angle = (index / 17) * Math.PI * 2 - Math.PI/2;
         this.x = centerX + Math.cos(angle) * radius;
         this.y = centerY + Math.sin(angle) * radius;
 
         this.size = 0;
-        this.maxSize = 45 + Math.random() * 25;
-        this.hue = 335 + (index * 3);
+        this.maxSize = 42 + Math.random() * 18;
+        this.hue = 330 + (index * 4);
         this.petals = 7 + Math.floor(Math.random() * 3);
         this.points = [];
         this.wobblePhase = Math.random() * Math.PI * 2;
@@ -314,8 +300,8 @@ class OrganicFlower {
         for (let i = 0; i < this.petals; i++) {
             this.points.push({
                 rot: (i / this.petals) * Math.PI * 2,
-                len: 1.2 + Math.random() * 0.5,
-                curveFactor: 0.6 + Math.random() * 0.3
+                len: 1.2 + Math.random() * 0.3,
+                curve: 0.6 + Math.random() * 0.3
             });
         }
     }
@@ -325,7 +311,7 @@ class OrganicFlower {
         label.className = 'member-name';
         label.innerText = this.name;
         label.style.left = `${this.x}px`;
-        label.style.top = `${this.y + 70}px`;
+        label.style.top = `${this.y + 65}px`;
         labelsContainer.appendChild(label);
         this.uiLabel = label;
     }
@@ -334,122 +320,120 @@ class OrganicFlower {
         if (this.size < 0.1) return;
         ctx.save();
         ctx.translate(this.x, this.y);
-        // Hoa đung đưa nhẹ (Wobble)
-        ctx.rotate(frame * 0.003 + Math.sin(frame * 0.02 + this.wobblePhase) * 0.05);
+        // Hoa đung đưa nhẹ theo nhịp
+        ctx.rotate(frame * 0.005 + Math.sin(frame * 0.02 + this.wobblePhase) * 0.05);
 
-        // Hiệu ứng Bloom cộng hưởng
-        ctx.globalCompositeOperation = 'lighter';
-
+        // Vẽ lớp cánh hoa chính (Lấp lánh)
         this.points.forEach(p => {
             ctx.save();
             ctx.rotate(p.rot);
-            const curSize = this.size * p.len;
-            const grad = ctx.createLinearGradient(0, 0, 0, curSize);
-            grad.addColorStop(0, `hsla(${this.hue}, 100%, 90%, 0.9)`);
-            grad.addColorStop(0.4, `hsla(${this.hue + 15}, 90%, 70%, 0.6)`);
+            
+            const grad = ctx.createLinearGradient(0, 0, 0, this.size * p.len);
+            grad.addColorStop(0, `hsla(${this.hue}, 100%, 88%, 0.9)`); // Sáng hơn chút
+            grad.addColorStop(0.5, `hsla(${this.hue + 15}, 80%, 60%, 0.4)`);
             grad.addColorStop(1, `hsla(${this.hue + 30}, 60%, 40%, 0)`);
 
             ctx.fillStyle = grad;
-            ctx.shadowBlur = 20 * (this.size / this.maxSize);
-            ctx.shadowColor = grad;
+            
+            // Viền cánh hoa bắt sáng (Gold Highlight)
+            if (this.size > this.maxSize * 0.9 && Math.random() > 0.92) {
+                ctx.shadowBlur = 10;
+                ctx.shadowColor = varColors.gold;
+                ctx.strokeStyle = `rgba(255, 207, 125, ${0.4 + Math.random()*0.4})`;
+                ctx.lineWidth = 0.5;
+            } else {
+                ctx.strokeStyle = 'transparent';
+            }
 
             ctx.beginPath();
             ctx.moveTo(0, 0);
-            ctx.bezierCurveTo(this.size * p.curveFactor, curSize * 0.4, this.size * 0.4, curSize, 0, curSize);
-            ctx.bezierCurveTo(-this.size * 0.4, curSize, -this.size * p.curveFactor, curSize * 0.4, 0, 0);
+            ctx.bezierCurveTo(this.size * p.curve, this.size * 0.5, this.size * 0.5, this.size * p.len, 0, this.size * p.len);
+            ctx.bezierCurveTo(-this.size * 0.5, this.size * p.len, -this.size * p.curve, this.size * 0.5, 0, 0);
             ctx.fill();
+            ctx.stroke(); // Vẽ viền bắt sáng
             ctx.restore();
         });
 
-        // Nhụy hoa rực rỡ
+        // Nhụy hoa rực sáng
         ctx.beginPath();
-        ctx.arc(0, 0, this.size/4.5, 0, Math.PI * 2);
+        ctx.arc(0, 0, this.size/5, 0, Math.PI * 2);
         ctx.fillStyle = "#fff";
-        ctx.shadowBlur = 30;
-        ctx.shadowColor = "#ffd700";
+        ctx.shadowBlur = 20;
+        ctx.shadowColor = "#fff";
         ctx.fill();
-        
+        ctx.shadowBlur = 0;
         ctx.restore();
-        ctx.globalCompositeOperation = 'source-over'; // Reset
     }
 
     update() {
         if (this.size < this.maxSize) {
-            this.size += (this.maxSize - this.size) * 0.06;
-            if (this.size > this.maxSize * 0.75) {
+            this.size += (this.maxSize - this.size) * 0.07;
+            if (this.size > this.maxSize * 0.7) {
                 this.uiLabel.style.opacity = 1;
-                this.uiLabel.style.transform = 'translate(-50%, -10px)'; // Trồi lên nhẹ
+                this.uiLabel.style.transform = 'translate(-50%, -5px)'; // Hiệu ứng trồi lên nhẹ
             }
         }
     }
 }
 
-// Khởi tạo nền bụi vàng
-for (let i = 0; i < 180; i++) particles.push(new Particle());
+// Khởi tạo nền
+for (let i = 0; i < 150; i++) particles.push(new Particle());
+// Lấy giá trị màu CSS
+const varColors = {
+    gold: getComputedStyle(document.documentElement).getPropertyValue('--gold'),
+    pink: getComputedStyle(document.documentElement).getPropertyValue('--pink')
+};
 
 window.addEventListener('mousedown', (e) => {
     if (flowers.length < 17) {
         const currentData = data[flowers.length];
-        const flower = new OrganicFlower(flowers.length, currentData);
+        const flower = new EtherealFlower(flowers.length, currentData);
         flowers.push(flower);
-        
         updateSubtitle(currentData.wish);
 
-        // Hiệu ứng pháo hoa khi click (Special particles)
+        // Nổ bụi click
         for(let i=0; i<25; i++) {
             particles.push(new Particle(e.clientX, e.clientY, true));
         }
-        document.getElementById('hint').style.display = 'none';
-    } else if (flowers.length === 17 && !isFinale) {
+        document.getElementById('hint').style.opacity = 0;
+    } else if (flowers.length === 17) {
         showFinalDate();
         flowers.push({ isDummy: true });
     }
 });
 
 function updateSubtitle(text) {
-    // Biến phụ đề cũ thành hạt ký ức (Memory particles)
-    if (wishSubtitle.innerText !== "") {
-        const rect = wishSubtitle.getBoundingClientRect();
-        for(let i=0; i<20; i++) {
-            const px = rect.left + Math.random() * rect.width;
-            const py = rect.top + Math.random() * rect.height;
-            particles.push(new Particle(px, py, false, true)); // isMemory = true
-        }
-    }
-
     wishSubtitle.style.opacity = 0;
-    wishSubtitle.style.transform = 'translateY(20px) blur(5px)';
+    wishSubtitle.style.transform = 'translateY(15px)';
     
     setTimeout(() => {
         wishSubtitle.innerText = text;
-        wishSubtitle.style.opacity = 1;
-        wishSubtitle.style.transform = 'translateY(0) blur(0)';
-    }, 600);
+        wishSubtitle.style.transition = 'none';
+        setTimeout(() => {
+            wishSubtitle.style.transition = 'all 1.2s cubic-bezier(0.19, 1, 0.22, 1)';
+            wishSubtitle.style.opacity = 1;
+            wishSubtitle.style.transform = 'translateY(0)';
+        }, 50);
+    }, 450);
 }
 
 function showFinalDate() {
-    isFinale = true;
-    wishSubtitle.style.opacity = 0; // Ẩn subtitle khi kết thúc
+    wishSubtitle.style.opacity = 0;
     const fd = document.getElementById('final-date');
     const fs = document.getElementById('final-sub');
-    
-    // Tăng tốc độ bay của hạt hiện có
-    particles.forEach(p => {
-        p.vx *= 3; p.vy *= 3; p.decay = 0.001;
-    });
-
     fd.style.transition = "all 5s cubic-bezier(0.19, 1, 0.22, 1)";
     fd.style.opacity = 1;
     fd.style.filter = "blur(0px)";
-    
     setTimeout(() => {
-        fs.style.opacity = 0.9;
-        fs.style.transition = "opacity 3s ease, letter-spacing 3s ease";
-        fs.style.letter-spacing = '15px';
+        fs.style.opacity = 0.7;
+        fs.style.transition = "opacity 2.5s ease";
     }, 2500);
-
-    // Xóa bớt label tên để trung tâm nổi bật
-    document.querySelectorAll('.member-name').forEach(el => el.style.opacity = 0.2);
+    // Hút toàn bộ hạt về tâm
+    particles.forEach(p => {
+        p.vx = (centerX - p.x) * 0.04;
+        p.vy = (centerY - p.y) * 0.04;
+        p.decay = 0.0015;
+    });
 }
 
 window.addEventListener('mousemove', (e) => {
@@ -459,18 +443,36 @@ window.addEventListener('mousemove', (e) => {
 
 function animate() {
     frame++;
-    // Nền tối với trail mờ mượt mà
-    ctx.fillStyle = 'rgba(2, 2, 4, 0.22)';
+    // Vẽ nền mờ Trail Effect
+    ctx.globalAlpha = 1;
+    ctx.fillStyle = 'rgba(3, 3, 6, 0.2)';
     ctx.fillRect(0, 0, width, height);
 
-    particles.forEach((p, i) => {
+    // Vẽ hiệu ứng quầng sáng nền (Mặt nước)
+    ctx.globalCompositeOperation = 'lighter'; // Tạo hiệu ứng cộng sáng
+    caustics.forEach(c => {
+        c.x += c.vx;
+        c.y += c.vy;
+        if(c.x < 0 || c.x > width) c.vx *= -1;
+        if(c.y < 0 || c.y > height) c.vy *= -1;
+        
+        ctx.globalAlpha = c.opacity;
+        let grad = ctx.createRadialGradient(c.x, c.y, 0, c.x, c.y, c.r);
+        grad.addColorStop(0, '#fff');
+        grad.addColorStop(0.3, varColors.gold);
+        grad.addColorStop(1, 'transparent');
+        ctx.fillStyle = grad;
+        ctx.beginPath();
+        ctx.arc(c.x, c.y, c.r, 0, Math.PI*2);
+        ctx.fill();
+    });
+    ctx.globalCompositeOperation = 'source-over'; // Trở về bình thường
+
+    particles.forEach(p => {
         p.update();
         p.draw();
-        // Xóa hạt ký ức khi hết đời
-        if (p.isMemory && p.life <= 0) particles.splice(i, 1);
     });
 
-    // Vẽ hoa (sau hạt để đè lên hạt)
     flowers.forEach(f => {
         if (!f.isDummy) {
             f.update();
