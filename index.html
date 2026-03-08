@@ -9,6 +9,7 @@
             --gold: #ffcf7d;
             --pink: #ff85a2;
             --dark: #050508;
+            --soft-white: rgba(255, 255, 255, 0.85);
         }
 
         body {
@@ -35,32 +36,49 @@
             pointer-events: none;
         }
 
-        .label-group {
-            position: absolute;
-            transform: translate(-50%, -50%);
-            text-align: center;
-            width: 300px;
-            pointer-events: none;
-        }
-
+        /* Tên thành viên cạnh hoa */
         .member-name {
-            font-size: 14px;
-            letter-spacing: 4px;
+            position: absolute;
+            font-size: 11px;
+            letter-spacing: 3px;
             text-transform: uppercase;
             color: var(--gold);
-            margin-bottom: 8px;
             opacity: 0;
-            text-shadow: 0 0 15px rgba(255, 207, 125, 0.5);
+            transform: translate(-50%, -50%);
+            white-space: nowrap;
+            text-shadow: 0 0 10px rgba(255, 207, 125, 0.4);
+            transition: opacity 1s ease;
         }
 
-        .wish-text {
+        /* Khu vực phụ đề lời chúc */
+        #subtitle-area {
+            position: fixed;
+            bottom: 10%;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 80%;
+            max-width: 800px;
+            text-align: center;
+            z-index: 20;
+        }
+
+        #wish-display {
             font-family: 'Playfair Display', serif;
             font-style: italic;
-            font-size: 13px;
-            color: rgba(255, 255, 255, 0.7);
-            line-height: 1.6;
+            font-size: 1.8rem;
+            color: var(--soft-white);
+            line-height: 1.5;
+            min-height: 3em;
+            text-shadow: 0 2px 15px rgba(0,0,0,0.5);
+        }
+
+        #current-name-display {
+            font-size: 0.8rem;
+            letter-spacing: 8px;
+            color: var(--pink);
+            text-transform: uppercase;
+            margin-bottom: 10px;
             opacity: 0;
-            transform: translateY(10px);
         }
 
         #center-piece {
@@ -69,12 +87,12 @@
             left: 50%;
             transform: translate(-50%, -50%);
             text-align: center;
-            z-index: 100;
+            z-index: 5;
         }
 
         .date-title {
             font-family: 'Cinzel', serif;
-            font-size: 120px;
+            font-size: clamp(80px, 15vw, 150px);
             background: linear-gradient(to bottom, #fff 30%, var(--gold));
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
@@ -83,22 +101,14 @@
             margin: 0;
         }
 
-        .subtitle {
-            letter-spacing: 15px;
-            font-size: 12px;
-            color: var(--pink);
-            opacity: 0;
-            margin-top: -20px;
-        }
-
         #hint {
             position: fixed;
-            bottom: 30px;
+            top: 40px;
             width: 100%;
             text-align: center;
             font-size: 9px;
             letter-spacing: 6px;
-            opacity: 0.5;
+            opacity: 0.4;
             color: var(--gold);
         }
     </style>
@@ -107,9 +117,14 @@
 
 <div id="ui-layer">
     <div id="labels-container"></div>
+    
+    <div id="subtitle-area">
+        <div id="current-name-display"></div>
+        <div id="wish-display"></div>
+    </div>
+
     <div id="center-piece">
         <h1 id="final-date" class="date-title">12/9</h1>
-        <p id="final-sub" class="subtitle">ALWAYS TOGETHER</p>
     </div>
 </div>
 
@@ -118,33 +133,35 @@
 
 <script>
 /**
- * THE 12/9 SYMPHONY - GENERATIVE ART CODE
+ * THE 12/9 SYMPHONY - ADVANCED SUBTITLE VERSION
  */
 
 const canvas = document.getElementById('canvas');
 const ctx = canvas.getContext('2d');
 const labelsContainer = document.getElementById('labels-container');
+const wishDisplay = document.getElementById('wish-display');
+const nameDisplay = document.getElementById('current-name-display');
 
 let width, height, centerX, centerY;
 let particles = [];
 let flowers = [];
 let frame = 0;
 let mouse = { x: -1000, y: -1000 };
+let isFinalMode = false;
 
-// 17 Bạn và 17 Lời chúc riêng biệt
 const data = [
     { name: "Huyền My", wish: "Mong nụ cười của bạn luôn rạng rỡ như đóa hướng dương đón nắng." },
     { name: "Linh Đan", wish: "Chúc bạn luôn giữ được sự dịu dàng và tâm hồn an yên giữa cuộc sống." },
     { name: "Minh Tú", wish: "Hãy tỏa sáng theo cách riêng của bạn, vì bạn là phiên bản duy nhất." },
     { name: "Thanh Trúc", wish: "Chúc bạn mỗi ngày đều là một bản nhạc ngọt ngào và đầy cảm hứng." },
     { name: "Phương Nghi", wish: "Mong những điều tốt đẹp nhất sẽ luôn tìm đến với cô gái kiên cường." },
-    { name: "Gia Hân", wish: "Chúc bạn luôn hạnh phúc và gặt hái được nhiều thành công trên con đường đã chọn." },
-    { name: "Tuệ Lâm", wish: "Sự thông tuệ và bản lĩnh của bạn luôn là nguồn năng lượng tích cực cho mọi người." },
+    { name: "Gia Hân", wish: "Chúc bạn luôn hạnh phúc và gặt hái được nhiều thành công rực rỡ." },
+    { name: "Tuệ Lâm", wish: "Sự thông tuệ và bản lĩnh của bạn luôn là nguồn năng lượng tuyệt vời." },
     { name: "Quỳnh Chi", wish: "Chúc bạn mãi xinh đẹp và tỏa hương thơm ngát như loài hoa Quỳnh." },
-    { name: "Bảo Ngọc", wish: "Bạn là viên ngọc quý, hãy luôn tự tin và trân trọng bản thân mình nhé." },
+    { name: "Bảo Ngọc", wish: "Bạn là viên ngọc quý, hãy luôn tự tin và trân trọng bản thân mình." },
     { name: "Ánh Dương", wish: "Chúc bạn luôn mang theo hơi ấm và ánh sáng đến mọi nơi bạn đi qua." },
     { name: "Khả Ái", wish: "Mong thế giới này luôn dịu dàng với một người đáng yêu như bạn." },
-    { name: "Mai Anh", wish: "Chúc bạn một thanh xuân rực rỡ và không hối tiếc với những đam mê." },
+    { name: "Mai Anh", wish: "Chúc bạn một thanh xuân rực rỡ và không hối tiếc với đam mê." },
     { name: "Ngọc Diệp", wish: "Như lá ngọc cành vàng, chúc bạn luôn thanh cao và tràn đầy sức sống." },
     { name: "Thảo Vy", wish: "Mong những giấc mơ của bạn sẽ sớm trở thành hiện thực tươi đẹp." },
     { name: "Yến Nhi", wish: "Hãy luôn là chú chim nhỏ tự do, sải cánh bay giữa bầu trời của riêng mình." },
@@ -160,192 +177,169 @@ function init() {
     canvas.width = width;
     canvas.height = height;
 }
-
 window.addEventListener('resize', init);
 init();
 
-// --- Hệ thống bụi vàng (Fairy Dust) ---
-class Particle {
-    constructor(x, y, isSpecial = false) {
-        this.reset(x, y, isSpecial);
+// --- Hiệu ứng chữ đánh máy (Typewriter) ---
+function typeWriter(text, element) {
+    element.innerHTML = "";
+    let i = 0;
+    const speed = 40; 
+    function type() {
+        if (i < text.length) {
+            element.innerHTML += text.charAt(i);
+            i++;
+            setTimeout(type, speed);
+        }
     }
-    reset(x, y, isSpecial) {
+    type();
+}
+
+// --- Lớp Hạt Sáng ---
+class Particle {
+    constructor(x, y, color = '#fff', size = 1) {
         this.x = x || Math.random() * width;
         this.y = y || Math.random() * height;
-        this.vx = (Math.random() - 0.5) * 0.8;
-        this.vy = (Math.random() - 0.5) * 0.8;
+        this.vx = (Math.random() - 0.5) * 1.2;
+        this.vy = (Math.random() - 0.5) * 1.2;
         this.life = 1;
-        this.decay = Math.random() * 0.005 + 0.002;
-        this.size = isSpecial ? Math.random() * 3 + 2 : Math.random() * 1.5;
-        this.color = isSpecial ? '#ffcf7d' : (Math.random() > 0.5 ? '#ff85a2' : '#fff');
+        this.size = size;
+        this.color = color;
     }
     update() {
-        // Tương tác vật lý nhẹ với chuột
-        let dx = mouse.x - this.x;
-        let dy = mouse.y - this.y;
-        let d = Math.sqrt(dx*dx + dy*dy);
-        if (d < 150) {
-            this.vx += dx * 0.0001;
-            this.vy += dy * 0.0001;
-        }
-
         this.x += this.vx;
         this.y += this.vy;
-        this.life -= this.decay;
-        if (this.life <= 0) this.reset();
+        this.life -= 0.005;
+        
+        if (isFinalMode) {
+            this.vx += (centerX - this.x) * 0.002;
+            this.vy += (centerY - this.y) * 0.002;
+        }
     }
     draw() {
         ctx.globalAlpha = this.life;
         ctx.fillStyle = this.color;
-        if (this.size > 2) {
-            ctx.shadowBlur = 10;
-            ctx.shadowColor = this.color;
-        }
         ctx.beginPath();
         ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
         ctx.fill();
-        ctx.shadowBlur = 0;
     }
 }
 
-// --- Hệ thống Hoa Cao Cấp ---
-class OrganicFlower {
+// --- Lớp Hoa ---
+class Flower {
     constructor(index, person) {
         this.index = index;
         this.name = person.name;
         this.wish = person.wish;
         
-        // Vị trí hình xoắn ốc vàng (Phyllotaxis cải tiến)
-        const radius = Math.min(width, height) * 0.35;
+        const radius = Math.min(width, height) * 0.32;
         const angle = (index / 17) * Math.PI * 2 - Math.PI/2;
         this.x = centerX + Math.cos(angle) * radius;
         this.y = centerY + Math.sin(angle) * radius;
 
         this.size = 0;
-        this.maxSize = 45 + Math.random() * 20;
+        this.targetSize = 40 + Math.random() * 15;
         this.hue = 330 + (index * 4);
-        this.petals = 6 + Math.floor(Math.random() * 4);
-        this.points = [];
-        this.initFlower();
-        this.createUI();
-    }
-
-    initFlower() {
-        for (let i = 0; i < this.petals; i++) {
-            this.points.push({
-                rot: (i / this.petals) * Math.PI * 2,
-                curve: 0.4 + Math.random() * 0.4,
-                len: 1.2 + Math.random() * 0.3
-            });
-        }
-    }
-
-    createUI() {
-        const group = document.createElement('div');
-        group.className = 'label-group';
-        group.style.left = `${this.x}px`;
-        group.style.top = `${this.y + 70}px`;
+        this.petals = 7 + Math.floor(Math.random() * 3);
         
-        group.innerHTML = `
-            <div class="member-name">${this.name}</div>
-            <div class="wish-text">${this.wish}</div>
-        `;
-        labelsContainer.appendChild(group);
-        this.ui = group;
+        this.createLabel();
+    }
+
+    createLabel() {
+        const el = document.createElement('div');
+        el.className = 'member-name';
+        el.innerText = this.name;
+        el.style.left = `${this.x}px`;
+        el.style.top = `${this.y + 45}px`;
+        labelsContainer.appendChild(el);
+        this.label = el;
     }
 
     draw() {
-        if (this.size < 0.1) return;
-
+        if (this.size < 1) return;
         ctx.save();
         ctx.translate(this.x, this.y);
-        ctx.rotate(frame * 0.005);
+        ctx.rotate(frame * 0.005 + this.index);
 
-        // Vẽ lớp cánh hoa mờ (Shadow Layer)
-        this.points.forEach(p => {
-            ctx.save();
-            ctx.rotate(p.rot);
+        for (let i = 0; i < this.petals; i++) {
+            ctx.rotate((Math.PI * 2) / this.petals);
+            const grad = ctx.createRadialGradient(0, 0, 0, 0, this.size, this.size);
+            grad.addColorStop(0, `hsla(${this.hue}, 100%, 85%, 0.9)`);
+            grad.addColorStop(1, `hsla(${this.hue + 20}, 70%, 40%, 0)`);
             
-            const grad = ctx.createLinearGradient(0, 0, 0, this.size * p.len);
-            grad.addColorStop(0, `hsla(${this.hue}, 100%, 80%, 0.8)`);
-            grad.addColorStop(1, `hsla(${this.hue + 20}, 60%, 40%, 0)`);
-
             ctx.fillStyle = grad;
             ctx.beginPath();
             ctx.moveTo(0, 0);
-            ctx.bezierCurveTo(this.size * 0.8, this.size * 0.5, this.size * 0.5, this.size * p.len, 0, this.size * p.len);
-            ctx.bezierCurveTo(-this.size * 0.5, this.size * p.len, -this.size * 0.8, this.size * 0.5, 0, 0);
+            ctx.bezierCurveTo(this.size, -this.size/2, this.size, this.size*1.5, 0, this.size);
+            ctx.bezierCurveTo(-this.size, this.size*1.5, -this.size, -this.size/2, 0, 0);
             ctx.fill();
-            ctx.restore();
-        });
-
-        // Nhụy hoa
+        }
+        
+        // Nhụy
         ctx.beginPath();
         ctx.arc(0, 0, this.size/4, 0, Math.PI * 2);
         ctx.fillStyle = "#fff";
-        ctx.shadowBlur = 15;
-        ctx.shadowColor = "#ffd700";
+        ctx.shadowBlur = 10;
+        ctx.shadowColor = "#fff";
         ctx.fill();
         ctx.restore();
     }
 
     update() {
-        if (this.size < this.maxSize) {
-            this.size += (this.maxSize - this.size) * 0.05;
-            
-            // Hiện chữ khi hoa đủ lớn
-            if (this.size > this.maxSize * 0.8) {
-                const name = this.ui.querySelector('.member-name');
-                const wish = this.ui.querySelector('.wish-text');
-                name.style.opacity = 1;
-                wish.style.opacity = 1;
-                wish.style.transform = 'translateY(0)';
-                wish.style.transition = 'all 1.5s ease';
-                name.style.transition = 'all 0.8s ease';
-            }
+        if (this.size < this.targetSize) {
+            this.size += 1.2;
+            if (this.size >= this.targetSize * 0.5) this.label.style.opacity = 0.7;
         }
     }
 }
 
-// Khởi tạo nền
-for (let i = 0; i < 150; i++) particles.push(new Particle());
+// Khởi tạo hạt nền
+for(let i=0; i<100; i++) particles.push(new Particle());
 
 window.addEventListener('mousedown', (e) => {
     if (flowers.length < 17) {
-        const flower = new OrganicFlower(flowers.length, data[flowers.length]);
-        flowers.push(flower);
+        const pData = data[flowers.length];
+        const f = new Flower(flowers.length, pData);
+        flowers.push(f);
         
-        // Hiệu ứng tia sáng khi click
-        for(let i=0; i<20; i++) {
-            particles.push(new Particle(e.clientX, e.clientY, true));
+        // Hiệu ứng bùng nổ chữ và hạt
+        nameDisplay.style.opacity = 0;
+        setTimeout(() => {
+            nameDisplay.innerText = pData.name;
+            nameDisplay.style.opacity = 1;
+            typeWriter(pData.wish, wishDisplay);
+        }, 200);
+
+        for(let i=0; i<25; i++) {
+            particles.push(new Particle(e.clientX, e.clientY, `hsla(${f.hue}, 100%, 75%, 1)`, 2));
         }
         
         document.getElementById('hint').style.opacity = 0;
     } else if (flowers.length === 17) {
-        showFinalDate();
-        flowers.push({ isDummy: true }); // Stop mọc hoa
+        triggerFinale();
+        flowers.push({isFinale: true});
     }
 });
 
-function showFinalDate() {
+function triggerFinale() {
+    isFinalMode = true;
     const fd = document.getElementById('final-date');
-    const fs = document.getElementById('final-sub');
-    
-    fd.style.transition = "all 4s cubic-bezier(0.19, 1, 0.22, 1)";
+    fd.style.transition = "all 5s cubic-bezier(0.19, 1, 0.22, 1)";
     fd.style.opacity = 1;
     fd.style.filter = "blur(0px)";
     
-    setTimeout(() => {
-        fs.style.opacity = 0.8;
-        fs.style.transition = "opacity 2s ease";
-    }, 2000);
+    wishDisplay.style.transition = "opacity 1s";
+    wishDisplay.style.opacity = 0;
+    nameDisplay.style.opacity = 0;
 
-    // Hút toàn bộ hạt về trung tâm
-    particles.forEach(p => {
-        p.vx = (centerX - p.x) * 0.05;
-        p.vy = (centerY - p.y) * 0.05;
-        p.decay = 0.001;
-    });
+    // Pháo hoa cuối cùng
+    setInterval(() => {
+        if (Math.random() > 0.7) {
+            for(let i=0; i<30; i++) {
+                particles.push(new Particle(Math.random()*width, Math.random()*height, '#ffcf7d', 1.5));
+            }
+        }
+    }, 500);
 }
 
 window.addEventListener('mousemove', (e) => {
@@ -355,16 +349,17 @@ window.addEventListener('mousemove', (e) => {
 
 function animate() {
     frame++;
-    ctx.fillStyle = 'rgba(5, 5, 8, 0.2)'; // Tăng trail để mượt hơn
+    ctx.fillStyle = 'rgba(5, 5, 8, 0.15)'; 
     ctx.fillRect(0, 0, width, height);
 
-    particles.forEach(p => {
+    particles.forEach((p, i) => {
         p.update();
         p.draw();
+        if (p.life <= 0) particles.splice(i, 1);
     });
 
     flowers.forEach(f => {
-        if (!f.isDummy) {
+        if (!f.isFinale) {
             f.update();
             f.draw();
         }
