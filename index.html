@@ -1,326 +1,235 @@
 <!DOCTYPE html>
 <html lang="vi">
 <head>
-<meta charset="UTF-8">
-<title>8.3 Constellation</title>
+    <meta charset="UTF-8">
+    <title>8/3 - The Unique Bloom</title>
+    <style>
+        body {
+            margin: 0;
+            overflow: hidden;
+            background: #050505;
+            color: #fff;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            user-select: none;
+        }
+        canvas { display: block; }
+        
+        .overlay {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            text-align: center;
+            pointer-events: none;
+            z-index: 10;
+        }
 
-<meta name="viewport" content="width=device-width,initial-scale=1">
+        h1 {
+            font-size: 15px;
+            letter-spacing: 8px;
+            text-transform: uppercase;
+            opacity: 0.6;
+            font-weight: 300;
+        }
 
-<link href="https://fonts.googleapis.com/css2?family=Playfair+Display&family=Quicksand:wght@300;500&display=swap" rel="stylesheet">
+        .counter {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            font-size: 12px;
+            opacity: 0.3;
+        }
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
-
-<style>
-
-body{
-margin:0;
-overflow:hidden;
-background:#05050a;
-font-family:Quicksand;
-color:white;
-cursor:none;
-}
-
-/* canvas */
-
-canvas{
-position:fixed;
-inset:0;
-}
-
-/* intro */
-
-.intro{
-
-position:fixed;
-inset:0;
-
-display:flex;
-align-items:center;
-justify-content:center;
-
-flex-direction:column;
-
-background:black;
-
-z-index:10;
-
-transition:1s;
-
-}
-
-.intro.hide{
-opacity:0;
-pointer-events:none;
-}
-
-.intro h1{
-font-family:Playfair Display;
-color:#ffb6d9;
-}
-
-/* message */
-
-.message{
-
-position:fixed;
-
-top:50%;
-left:50%;
-
-transform:translate(-50%,-50%);
-
-background:rgba(255,255,255,0.08);
-
-backdrop-filter:blur(20px);
-
-padding:40px;
-
-border-radius:20px;
-
-max-width:500px;
-
-text-align:center;
-
-opacity:0;
-
-pointer-events:none;
-
-}
-
-/* cursor */
-
-#dot{
-width:6px;
-height:6px;
-background:white;
-border-radius:50%;
-position:fixed;
-z-index:100;
-}
-
-#ring{
-width:40px;
-height:40px;
-border:1px solid pink;
-border-radius:50%;
-position:fixed;
-z-index:99;
-}
-
-</style>
+        #message-box {
+            position: fixed;
+            top: 40%;
+            width: 100%;
+            text-align: center;
+            font-style: italic;
+            font-size: 24px;
+            color: #ffb6c1;
+            text-shadow: 0 0 20px rgba(255,182,193,0.5);
+            opacity: 0;
+            transition: all 1s ease;
+        }
+    </style>
 </head>
-
 <body>
 
-<canvas id="c"></canvas>
-
-<div id="dot"></div>
-<div id="ring"></div>
-
-<div class="intro" id="intro">
-<h1>8 / 3</h1>
-<p>Click để bắt đầu</p>
+<div class="overlay" id="intro">
+    <h1>Create your own garden</h1>
+    <p style="opacity: 0.4; font-size: 12px;">Click bất kỳ đâu để bắt đầu</p>
 </div>
 
-<div class="message" id="msg"></div>
+<div id="message-box"></div>
+<div class="counter" id="counter">BLOOMS: 0</div>
+
+<canvas id="canvas"></canvas>
 
 <script>
+const canvas = document.getElementById('canvas');
+const ctx = canvas.getContext('2d');
+const msgBox = document.getElementById('message-box');
+const counterDisplay = document.getElementById('counter');
 
-/* canvas */
+let width, height;
+let flowers = [];
+let particles = [];
+let mouse = { x: -1000, y: -1000 };
+let count = 0;
 
-const canvas=document.getElementById("c")
-const ctx=canvas.getContext("2d")
+const quotes = [
+    "Dịu dàng như hơi thở của mùa xuân",
+    "Mỗi đóa hoa là một tâm hồn rực rỡ",
+    "Bạn xứng đáng với mọi điều lấp lánh nhất",
+    "Hành trình của bạn là một kiệt tác",
+    "Tỏa sáng theo cách của riêng mình",
+    "Thế giới trân trọng sự hiện diện của bạn",
+    "Mạnh mẽ như cỏ dại, thanh tao như hoa hồng",
+    "Chúc bạn một ngày 8/3 trọn vẹn yêu thương"
+];
 
-let w=canvas.width=window.innerWidth
-let h=canvas.height=window.innerHeight
-
-/* mouse */
-
-const mouse={x:w/2,y:h/2}
-
-document.addEventListener("mousemove",e=>{
-
-mouse.x=e.clientX
-mouse.y=e.clientY
-
-})
-
-/* particle */
-
-class Star{
-
-constructor(){
-
-this.reset()
-
+function init() {
+    width = window.innerWidth;
+    height = window.innerHeight;
+    canvas.width = width;
+    canvas.height = height;
+    
+    // Khởi tạo các hạt bụi ánh sáng nền
+    for(let i = 0; i < 100; i++) {
+        particles.push({
+            x: Math.random() * width,
+            y: Math.random() * height,
+            originX: Math.random() * width,
+            originY: Math.random() * height,
+            size: Math.random() * 2,
+            color: `rgba(255, 255, 255, ${Math.random() * 0.3})`
+        });
+    }
 }
 
-reset(){
+class Branch {
+    constructor(x, y, angle, color, limit) {
+        this.x = x;
+        this.y = y;
+        this.angle = angle;
+        this.color = color;
+        this.limit = limit;
+        this.speed = Math.random() * 2 + 1;
+        this.curve = (Math.random() - 0.5) * 0.2;
+        this.width = Math.random() * 2 + 1;
+        this.life = 0;
+    }
 
-this.x=Math.random()*w
-this.y=Math.random()*h
+    draw() {
+        if (this.life >= this.limit) return;
+        
+        ctx.beginPath();
+        ctx.strokeStyle = this.color;
+        ctx.lineWidth = this.width;
+        ctx.lineCap = 'round';
+        ctx.moveTo(this.x, this.y);
+        
+        this.angle += this.curve;
+        this.x += Math.cos(this.angle) * this.speed;
+        this.y += Math.sin(this.angle) * this.speed;
+        this.life++;
+        this.width *= 0.98;
 
-this.vx=(Math.random()-0.5)*0.5
-this.vy=(Math.random()-0.5)*0.5
-
-this.size=Math.random()*2+0.5
-
-this.alpha=Math.random()
-
+        ctx.lineTo(this.x, this.y);
+        ctx.stroke();
+    }
 }
 
-update(){
-
-let dx=mouse.x-this.x
-let dy=mouse.y-this.y
-
-let dist=Math.sqrt(dx*dx+dy*dy)
-
-if(dist<120){
-
-this.vx+=dx*0.0003
-this.vy+=dy*0.0003
-
+class SpecialFlower {
+    constructor(x, y) {
+        this.branches = [];
+        const hue = Math.random() * 60 + 320; // Dải màu hồng - tím
+        const color = `hsla(${hue}, 80%, 70%, 0.4)`;
+        const numBranches = 12 + Math.floor(Math.random() * 8);
+        
+        for (let i = 0; i < numBranches; i++) {
+            this.branches.push(new Branch(x, y, (i / numBranches) * Math.PI * 2, color, 40 + Math.random() * 30));
+        }
+    }
+    update() {
+        this.branches.forEach(b => b.draw());
+    }
 }
 
-this.x+=this.vx
-this.y+=this.vy
-
-this.vx*=0.98
-this.vy*=0.98
-
+function showMessage() {
+    msgBox.innerText = quotes[count % quotes.length];
+    msgBox.style.opacity = '1';
+    msgBox.style.transform = 'translateY(-20px)';
+    
+    setTimeout(() => {
+        msgBox.style.opacity = '0';
+        msgBox.style.transform = 'translateY(0)';
+    }, 3000);
 }
 
-draw(){
+window.addEventListener('mousedown', e => {
+    document.getElementById('intro').style.opacity = '0';
+    flowers.push(new SpecialFlower(e.clientX, e.clientY));
+    count++;
+    counterDisplay.innerText = `BLOOMS: ${count}`;
+    showMessage();
+    
+    // Hiệu ứng nổ hạt tại điểm click
+    for(let i=0; i<20; i++) {
+        particles.push({
+            x: e.clientX,
+            y: e.clientY,
+            originX: e.clientX + (Math.random()-0.5)*300,
+            originY: e.clientY + (Math.random()-0.5)*300,
+            size: Math.random() * 4,
+            color: `hsla(${340 + Math.random()*40}, 100%, 70%, 0.8)`,
+            vx: (Math.random()-0.5)*10,
+            vy: (Math.random()-0.5)*10
+        });
+    }
+});
 
-ctx.beginPath()
-ctx.arc(this.x,this.y,this.size,0,Math.PI*2)
+window.addEventListener('mousemove', e => {
+    mouse.x = e.clientX;
+    mouse.y = e.clientY;
+});
 
-ctx.fillStyle="rgba(255,255,255,"+this.alpha+")"
-ctx.fill()
+function animate() {
+    // Không clear hoàn toàn để tạo hiệu ứng vẽ chồng lấn (Generative)
+    ctx.fillStyle = 'rgba(5, 5, 5, 0.05)';
+    ctx.fillRect(0, 0, width, height);
 
+    // Xử lý hạt bụi ánh sáng
+    particles.forEach((p, i) => {
+        // Lực tương tác với chuột
+        const dx = mouse.x - p.x;
+        const dy = mouse.y - p.y;
+        const dist = Math.sqrt(dx*dx + dy*dy);
+        
+        if(dist < 150) {
+            p.x -= dx * 0.05;
+            p.y -= dy * 0.05;
+        } else {
+            p.x += (p.originX - p.x) * 0.01;
+            p.y += (p.originY - p.y) * 0.01;
+        }
+
+        ctx.fillStyle = p.color;
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, p.size, 0, Math.PI*2);
+        ctx.fill();
+    });
+
+    flowers.forEach(f => f.update());
+
+    requestAnimationFrame(animate);
 }
 
-}
-
-/* create stars */
-
-const stars=[]
-
-for(let i=0;i<800;i++){
-
-stars.push(new Star())
-
-}
-
-/* burst */
-
-function burst(x,y){
-
-for(let i=0;i<60;i++){
-
-let s=new Star()
-
-s.x=x
-s.y=y
-
-s.vx=(Math.random()-0.5)*6
-s.vy=(Math.random()-0.5)*6
-
-stars.push(s)
-
-}
-
-}
-
-/* messages */
-
-const wishes=[
-
-"Cảm ơn vì đã làm cho lớp mình rực rỡ hơn ✨",
-
-"Chúc các bạn nữ luôn tự tin và hạnh phúc 🌸",
-
-"Mong rằng mỗi ngày của các bạn đều tràn đầy niềm vui 🌷",
-
-"Happy Women's Day ❤️",
-
-"Các bạn chính là những vì sao của lớp ⭐"
-
-]
-
-/* show message */
-
-function showMessage(){
-
-const m=document.getElementById("msg")
-
-m.innerHTML="<p>"+wishes[Math.floor(Math.random()*wishes.length)]+"</p>"
-
-gsap.fromTo(
-m,
-{opacity:0,y:40},
-{opacity:1,y:0,duration:0.8}
-)
-
-gsap.to(m,{
-opacity:0,
-delay:3
-})
-
-}
-
-/* click */
-
-document.addEventListener("click",e=>{
-
-burst(e.clientX,e.clientY)
-
-showMessage()
-
-})
-
-/* animation */
-
-function animate(){
-
-ctx.clearRect(0,0,w,h)
-
-stars.forEach(s=>{
-
-s.update()
-s.draw()
-
-})
-
-requestAnimationFrame(animate)
-
-}
-
-animate()
-
-/* cursor */
-
-const dot=document.getElementById("dot")
-const ring=document.getElementById("ring")
-
-document.addEventListener("mousemove",e=>{
-
-gsap.to(dot,{x:e.clientX,y:e.clientY,duration:0})
-gsap.to(ring,{x:e.clientX-20,y:e.clientY-20,duration:0.2})
-
-})
-
-/* intro */
-
-document.getElementById("intro").onclick=()=>{
-
-document.getElementById("intro").classList.add("hide")
-
-}
+window.addEventListener('resize', init);
+init();
+animate();
 
 </script>
-
 </body>
 </html>
