@@ -1,413 +1,299 @@
-<!DOCTYPE html>
-<html lang="vi">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>12/9 - 8/3 Infinite Bloom</title>
-    <link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@700&family=Quicksand:wght@300;600&display=swap" rel="stylesheet">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
-    <style>
-        :root {
-            --bg: #050508;
-            --accent: #ff85a2;
-            --gold: #ffd700;
-        }
+import os
+import json
+import time
+import random
+import hashlib
+from datetime import datetime
 
-        body, html {
-            margin: 0;
-            padding: 0;
-            width: 100%;
-            height: 100%;
-            overflow: hidden;
-            background-color: var(--bg);
-            font-family: 'Quicksand', sans-serif;
-            cursor: crosshair;
-        }
+DATA_FILE = "capsule_data.json"
 
-        #canvas {
-            position: absolute;
-            top: 0;
-            left: 0;
-            z-index: 1;
-        }
+# =============================
+# Utility functions
+# =============================
 
-        /* UI Overlays */
-        .interface {
-            position: fixed;
-            inset: 0;
-            z-index: 10;
-            pointer-events: none;
-            display: flex;
-            flex-direction: column;
-            justify-content: space-between;
-            padding: 40px;
-            box-sizing: border-box;
-        }
+def slow_print(text, delay=0.02):
+    for c in text:
+        print(c, end="", flush=True)
+        time.sleep(delay)
+    print()
 
-        .header {
-            text-align: center;
-            opacity: 0.8;
-        }
+def divider():
+    print("\n" + "="*50 + "\n")
 
-        .header h1 {
-            font-family: 'Dancing Script', cursive;
-            font-size: 3.5rem;
-            color: var(--accent);
-            margin: 0;
-            text-shadow: 0 0 20px rgba(255, 133, 162, 0.5);
-        }
+def clear():
+    os.system("cls" if os.name == "nt" else "clear")
 
-        .counter {
-            position: fixed;
-            bottom: 30px;
-            right: 30px;
-            font-size: 1.2rem;
-            color: rgba(255, 255, 255, 0.4);
-            letter-spacing: 2px;
-        }
+# =============================
+# Encryption system
+# =============================
 
-        .instruction {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            color: white;
-            text-align: center;
-            transition: opacity 1s;
-        }
+def generate_key(password):
+    return hashlib.sha256(password.encode()).hexdigest()
 
-        .instruction p {
-            font-weight: 300;
-            letter-spacing: 4px;
-            animation: pulse 2s infinite;
-        }
+def encrypt(text, password):
+    key = generate_key(password)
+    encrypted = ""
 
-        @keyframes pulse {
-            0%, 100% { opacity: 0.3; }
-            50% { opacity: 0.8; }
-        }
+    for i, c in enumerate(text):
+        k = ord(key[i % len(key)])
+        encrypted += chr((ord(c) + k) % 256)
 
-        /* Card Message */
-        #name-tag {
-            position: fixed;
-            padding: 10px 20px;
-            background: rgba(255, 255, 255, 0.1);
-            backdrop-filter: blur(10px);
-            border-radius: 5px;
-            color: white;
-            font-weight: 600;
-            pointer-events: none;
-            display: none;
-            z-index: 100;
-            border-left: 3px solid var(--accent);
-        }
+    return encrypted
 
-        #final-overlay {
-            position: fixed;
-            inset: 0;
-            background: radial-gradient(circle, rgba(255, 133, 162, 0.2) 0%, transparent 70%);
-            display: none;
-            justify-content: center;
-            align-items: center;
-            z-index: 1000;
-            flex-direction: column;
-        }
+def decrypt(text, password):
+    key = generate_key(password)
+    decrypted = ""
 
-        .final-text {
-            font-family: 'Dancing Script', cursive;
-            font-size: 8rem;
-            color: var(--gold);
-            text-shadow: 0 0 50px rgba(255, 215, 0, 0.8);
-        }
-    </style>
-</head>
-<body>
+    for i, c in enumerate(text):
+        k = ord(key[i % len(key)])
+        decrypted += chr((ord(c) - k) % 256)
 
-<canvas id="canvas"></canvas>
-<div id="name-tag"></div>
+    return decrypted
 
-<div class="interface">
-    <div class="header">
-        <h1>Vườn Hoa 12/9</h1>
-    </div>
+# =============================
+# Data storage
+# =============================
+
+def load_data():
+    if not os.path.exists(DATA_FILE):
+        return []
     
-    <div class="instruction" id="guide">
-        <p>CHẠM ĐỂ ĐÁNH THỨC CÁC ĐÓA HOA</p>
-    </div>
+    with open(DATA_FILE, "r") as f:
+        return json.load(f)
 
-    <div class="counter" id="count-ui">0 / 45</div>
-</div>
+def save_data(data):
+    with open(DATA_FILE, "w") as f:
+        json.dump(data, f, indent=4)
 
-<div id="final-overlay">
-    <div class="final-text">12 / 9</div>
-    <p style="letter-spacing: 10px; color: white; opacity: 0.7;">MÃI LÀ MỘT GIA ĐÌNH</p>
-</div>
+# =============================
+# Random reflections (AI-like)
+# =============================
 
-<script>
-/**
- * GENERATIVE BLOOM ART - VERSION 12/9
- * Developed with Love & Math
- */
+REFLECTIONS = [
 
-const canvas = document.getElementById('canvas');
-const ctx = canvas.getContext('2d');
-const nameTag = document.getElementById('name-tag');
-const countUI = document.getElementById('count-ui');
+"Time doesn't change us. It reveals us.",
+"The past whispers, but the future listens.",
+"Every memory is a message from who you were.",
+"You trusted the future with this moment.",
+"Some thoughts only make sense years later.",
+"You once cared enough to write this.",
+"Moments fade, meaning grows.",
+"The person who wrote this believed in tomorrow."
 
-let width, height, centerX, centerY;
-let flowers = [];
-let particles = [];
-let butterflies = [];
-let isFinished = false;
+]
 
-// Danh sách 45 tên (Bạn hãy thay thế tên thật vào đây)
-const memberNames = [
-    "An", "Bình", "Chi", "Dương", "Đạt", "Hà", "Hương", "Hùng", "Lan", "Linh",
-    "Minh", "Nam", "Ngọc", "Oanh", "Phúc", "Quân", "Sơn", "Thảo", "Trang", "Tuấn",
-    "Vân", "Việt", "Yến", "Hoàng", "Khánh", "Long", "Mai", "Nga", "Phong", "Quỳnh",
-    "Thành", "Tiến", "Tùng", "Anh", "Bảo", "Cường", "Diệp", "Giang", "Hạnh", "Khoa",
-    "Lâm", "Nhung", "Phương", "Thắng", "12/9" 
-];
+def ai_reflection():
+    return random.choice(REFLECTIONS)
 
-// Cấu hình toán học cho Phyllotaxis (Vòng xoáy thiên hà)
-const goldenAngle = Math.PI * (3 - Math.sqrt(5));
-const spacing = 45;
+# =============================
+# Capsule creation
+# =============================
 
-function init() {
-    width = window.innerWidth;
-    height = window.innerHeight;
-    centerX = width / 2;
-    centerY = height / 2;
-    canvas.width = width;
-    canvas.height = height;
-}
+def create_capsule():
 
-window.addEventListener('resize', init);
-init();
-
-// --- LỚP HẠT (PARTICLES) ---
-class Particle {
-    constructor(x, y, color) {
-        this.x = x;
-        this.y = y;
-        this.color = color;
-        this.size = Math.random() * 2 + 1;
-        this.vx = (Math.random() - 0.5) * 4;
-        this.vy = (Math.random() - 0.5) * 4;
-        this.alpha = 1;
-    }
-    update() {
-        this.x += this.vx;
-        this.y += this.vy;
-        this.alpha -= 0.01;
-    }
-    draw() {
-        ctx.save();
-        ctx.globalAlpha = this.alpha;
-        ctx.fillStyle = this.color;
-        ctx.shadowBlur = 10;
-        ctx.shadowColor = this.color;
-        ctx.beginPath();
-        ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
-        ctx.fill();
-        ctx.restore();
-    }
-}
-
-// --- LỚP BƯỚM (BUTTERFLIES) ---
-class Butterfly {
-    constructor() {
-        this.x = Math.random() * width;
-        this.y = Math.random() * height;
-        this.angle = Math.random() * Math.PI * 2;
-        this.velocity = 1 + Math.random() * 2;
-        this.wingSpan = 0;
-        this.wingSpeed = 0.1 + Math.random() * 0.1;
-        this.hue = Math.random() * 60 + 300; // Tông hồng tím
-    }
-    update() {
-        this.x += Math.cos(this.angle) * this.velocity;
-        this.y += Math.sin(this.angle) * this.velocity;
-        this.wingSpan += this.wingSpeed;
-        this.angle += Math.sin(this.wingSpan) * 0.05;
-
-        if (this.x < 0) this.x = width;
-        if (this.x > width) this.x = 0;
-        if (this.y < 0) this.y = height;
-        if (this.y > height) this.y = 0;
-    }
-    draw() {
-        ctx.save();
-        ctx.translate(this.x, this.y);
-        ctx.rotate(this.angle);
-        ctx.fillStyle = `hsla(${this.hue}, 100%, 70%, 0.6)`;
-        
-        let wingW = Math.abs(Math.sin(this.wingSpan)) * 10;
-        // Vẽ 2 cánh bướm
-        ctx.beginPath();
-        ctx.ellipse(0, -wingW/2, 12, wingW, 0, 0, Math.PI*2);
-        ctx.ellipse(0, wingW/2, 12, wingW, 0, 0, Math.PI*2);
-        ctx.fill();
-        ctx.restore();
-    }
-}
-
-// --- LỚP HOA (FLOWER) ---
-class Flower {
-    constructor(index) {
-        this.index = index;
-        this.name = memberNames[index];
-        this.isFinal = (index === 44);
-        
-        // Tính toán vị trí theo thuật toán Phyllotaxis
-        const r = spacing * Math.sqrt(index + 1);
-        const theta = index * goldenAngle;
-        this.x = centerX + r * Math.cos(theta);
-        this.y = centerY + r * Math.sin(theta);
-        
-        this.size = 0;
-        this.maxSize = this.isFinal ? 120 : 35 + Math.random() * 20;
-        this.petals = this.isFinal ? 12 : 6 + Math.floor(Math.random() * 4);
-        this.hue = this.isFinal ? 45 : (320 + Math.random() * 60); // Vàng cho 12/9, Hồng cho còn lại
-        this.rot = 0;
-        this.opacity = 0;
-    }
-
-    draw() {
-        ctx.save();
-        ctx.translate(this.x, this.y);
-        ctx.rotate(this.rot);
-        ctx.globalAlpha = this.opacity;
-
-        // Vẽ cuống hoa (stalk) hướng về tâm
-        ctx.strokeStyle = 'rgba(255, 255, 255, 0.1)';
-        ctx.beginPath();
-        ctx.moveTo(0, 0);
-        ctx.lineTo(centerX - this.x, centerY - this.y);
-        ctx.stroke();
-
-        // Vẽ cánh hoa
-        for (let i = 0; i < this.petals; i++) {
-            ctx.rotate((Math.PI * 2) / this.petals);
-            ctx.beginPath();
-            let grad = ctx.createRadialGradient(0, 0, 0, 0, this.size, this.size);
-            grad.addColorStop(0, `hsla(${this.hue}, 100%, 75%, 1)`);
-            grad.addColorStop(1, `hsla(${this.hue - 30}, 100%, 40%, 0)`);
-            ctx.fillStyle = grad;
-            
-            // Hình dáng cánh hoa phức tạp hơn
-            ctx.moveTo(0, 0);
-            ctx.bezierCurveTo(this.size, -this.size, this.size * 1.5, this.size / 2, 0, this.size);
-            ctx.bezierCurveTo(-this.size * 1.5, this.size / 2, -this.size, -this.size, 0, 0);
-            ctx.fill();
-        }
-
-        // Nhụy hoa
-        ctx.beginPath();
-        ctx.arc(0, 0, this.size / 4, 0, Math.PI * 2);
-        ctx.fillStyle = "white";
-        ctx.shadowBlur = 15;
-        ctx.shadowColor = "white";
-        ctx.fill();
-
-        // Tên bạn
-        if (this.size > this.maxSize * 0.8) {
-            ctx.rotate(-this.rot - (this.index * goldenAngle)); // Reset rotation để chữ nằm ngang
-            ctx.fillStyle = "rgba(255,255,255,0.9)";
-            ctx.font = `${this.isFinal ? 24 : 12}px Quicksand`;
-            ctx.textAlign = "center";
-            ctx.fillText(this.name, 0, this.size + 15);
-        }
-
-        ctx.restore();
-    }
-
-    update() {
-        if (this.size < this.maxSize) this.size += 1.5;
-        if (this.opacity < 1) this.opacity += 0.05;
-        this.rot += 0.01;
-    }
-}
-
-// Khởi tạo một vài con bướm ban đầu
-for(let i=0; i<8; i++) butterflies.push(new Butterfly());
-
-// Xử lý sự kiện click
-window.addEventListener('mousedown', (e) => {
-    if (flowers.length >= 45) return;
-
-    document.getElementById('guide').style.opacity = '0';
+    divider()
+    slow_print("Create a new Time Capsule")
     
-    let nextIndex = flowers.length;
-    let f = new Flower(nextIndex);
+    title = input("Title: ")
     
-    // Nếu là bông cuối, đưa nó về tâm
-    if (f.isFinal) {
-        f.x = centerX;
-        f.y = centerY;
+    message = input("Write your message for the future:\n")
+
+    password = input("Set a password: ")
+
+    open_time = input("Open date (YYYY-MM-DD HH:MM): ")
+
+    try:
+        unlock_time = datetime.strptime(open_time, "%Y-%m-%d %H:%M")
+    except:
+        slow_print("Invalid date format.")
+        return
+
+    encrypted = encrypt(message, password)
+
+    capsule = {
+
+        "title": title,
+        "message": encrypted,
+        "unlock_time": open_time,
+        "created": str(datetime.now())
+
     }
 
-    flowers.push(f);
-    countUI.innerText = `${flowers.length} / 45`;
+    data = load_data()
+    data.append(capsule)
+    save_data(data)
 
-    // Nổ hạt tại vị trí click
-    for (let i = 0; i < 20; i++) {
-        particles.push(new Particle(e.clientX, e.clientY, `hsl(${f.hue}, 100%, 70%)`));
-    }
+    slow_print("Capsule sealed successfully.")
 
-    // Hiệu ứng hoàn thành
-    if (flowers.length === 45) {
-        isFinished = true;
-        setTimeout(() => {
-            gsap.to("#final-overlay", {display: 'flex', opacity: 1, duration: 2});
-        }, 1500);
-    }
-});
+# =============================
+# View capsules
+# =============================
 
-function animate() {
-    // Tạo hiệu ứng ghosting mượt mà
-    ctx.fillStyle = 'rgba(5, 5, 8, 0.2)';
-    ctx.fillRect(0, 0, width, height);
+def list_capsules():
 
-    // Cập nhật bướm
-    butterflies.forEach(b => {
-        b.update();
-        b.draw();
-    });
+    divider()
 
-    // Cập nhật hạt
-    particles.forEach((p, i) => {
-        p.update();
-        p.draw();
-        if (p.alpha <= 0) particles.splice(i, 1);
-    });
+    data = load_data()
 
-    // Cập nhật hoa
-    flowers.forEach(f => {
-        f.update();
-        f.draw();
-    });
+    if not data:
+        slow_print("No capsules found.")
+        return
 
-    requestAnimationFrame(animate);
-}
+    for i, c in enumerate(data):
 
-animate();
+        slow_print(f"{i+1}. {c['title']} (unlock: {c['unlock_time']})")
 
-// Hiệu ứng di chuyển chuột tạo Name Tag (Chỉ dành cho hoa đã nở)
-window.addEventListener('mousemove', (e) => {
-    let found = false;
-    flowers.forEach(f => {
-        let dist = Math.hypot(f.x - e.clientX, f.y - e.clientY);
-        if (dist < 40) {
-            nameTag.style.display = 'block';
-            nameTag.style.left = e.clientX + 20 + 'px';
-            nameTag.style.top = e.clientY + 'px';
-            nameTag.innerText = "Member: " + f.name;
-            found = true;
-        }
-    });
-    if (!found) nameTag.style.display = 'none';
-});
-</script>
-</body>
-</html>
+# =============================
+# Open capsule
+# =============================
+
+def open_capsule():
+
+    data = load_data()
+
+    if not data:
+        slow_print("No capsules.")
+        return
+
+    list_capsules()
+
+    try:
+        idx = int(input("Select capsule: ")) - 1
+    except:
+        return
+
+    if idx < 0 or idx >= len(data):
+        return
+
+    capsule = data[idx]
+
+    unlock_time = datetime.strptime(capsule["unlock_time"], "%Y-%m-%d %H:%M")
+
+    if datetime.now() < unlock_time:
+
+        slow_print("This capsule is locked in time.")
+        slow_print(f"Opens at: {unlock_time}")
+        return
+
+    password = input("Enter password: ")
+
+    try:
+        message = decrypt(capsule["message"], password)
+    except:
+        slow_print("Wrong password.")
+        return
+
+    divider()
+
+    slow_print("Capsule opened.\n")
+
+    slow_print(message, 0.03)
+
+    divider()
+
+    slow_print("Reflection:")
+    slow_print(ai_reflection())
+
+# =============================
+# Easter eggs
+# =============================
+
+def secret_mode():
+
+    clear()
+
+    slow_print("Accessing hidden archive...")
+
+    time.sleep(1)
+
+    slow_print("Some secrets aren't locked by time.")
+
+    slow_print("They are locked by curiosity.")
+
+    time.sleep(1)
+
+    slow_print("Here is a message:")
+
+    slow_print("If you discovered this, you're the kind of person who explores beyond menus.")
+
+# =============================
+# Random glitch effect
+# =============================
+
+def glitch():
+
+    chars = "!@#$%^&*()_+-=[]{};:"
+
+    for _ in range(10):
+
+        line = "".join(random.choice(chars) for _ in range(50))
+        print(line)
+        time.sleep(0.05)
+
+# =============================
+# Animated intro
+# =============================
+
+def intro():
+
+    clear()
+
+    slow_print("Initializing Time Capsule System...",0.04)
+
+    time.sleep(0.5)
+
+    glitch()
+
+    slow_print("System Ready.")
+
+# =============================
+# Main menu
+# =============================
+
+def menu():
+
+    while True:
+
+        divider()
+
+        slow_print("DIGITAL TIME CAPSULE")
+
+        slow_print("1. Create Capsule")
+        slow_print("2. List Capsules")
+        slow_print("3. Open Capsule")
+        slow_print("4. Exit")
+
+        choice = input("> ")
+
+        if choice == "1":
+            create_capsule()
+
+        elif choice == "2":
+            list_capsules()
+
+        elif choice == "3":
+            open_capsule()
+
+        elif choice == "4":
+            slow_print("Goodbye.")
+            break
+
+        elif choice.lower() == "oracle":
+
+            secret_mode()
+
+        else:
+            slow_print("Unknown command.")
+
+# =============================
+# Main
+# =============================
+
+def main():
+
+    intro()
+
+    menu()
+
+if __name__ == "__main__":
+    main()
