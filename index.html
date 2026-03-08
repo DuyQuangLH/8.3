@@ -2,14 +2,14 @@
 <html lang="vi">
 <head>
     <meta charset="UTF-8">
-    <title>Symphony 12/9 - 8.3</title>
+    <title>12/9 8.3</title>
     <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&family=Montserrat:wght@200;400&family=Playfair+Display:italic@1&display=swap" rel="stylesheet">
     <style>
         :root {
             --gold: #ffcf7d;
             --pink: #ff85a2;
-            --dark: #020204;
-            --sub-white: rgba(255, 255, 255, 0.9);
+            --dark: #020204; /* Tối sâu hơn một chút */
+            --sub-white: rgba(255, 255, 255, 0.85);
         }
 
         body {
@@ -27,6 +27,7 @@
             top: 0;
             left: 0;
             z-index: 1;
+            filter: contrast(110%) brightness(105%);
         }
 
         #ui-layer {
@@ -38,39 +39,41 @@
 
         .member-name {
             position: absolute;
-            font-size: 9px;
-            letter-spacing: 3px;
+            font-size: 10px;
+            letter-spacing: 4px;
             text-transform: uppercase;
             color: var(--gold);
             transform: translate(-50%, 0);
             opacity: 0;
-            text-shadow: 0 0 10px rgba(255, 207, 125, 0.5);
+            text-shadow: 0 0 15px rgba(255, 207, 125, 0.6);
             white-space: nowrap;
-            transition: opacity 1.5s ease, transform 1.2s ease;
+            transition: opacity 1.5s ease, transform 1s ease;
         }
 
-        /* TÂM VÒNG TRÒN - NƠI HIỂN THỊ LỜI CHÚC */
+        /* ĐÃ ĐIỀU CHỈNH: Đưa container vào tâm vòng tròn */
         #subtitle-container {
-            position: absolute;
+            position: fixed;
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
-            width: 350px; /* Giới hạn độ rộng để không đè lên hoa */
+            width: 50%; /* Thu hẹp chiều rộng để chữ không chạm vào hoa */
+            max-width: 600px;
             text-align: center;
-            z-index: 20;
-            pointer-events: none;
+            z-index: 100;
+            pointer-events: none; /* Đảm bảo vẫn click được vào canvas phía dưới */
         }
 
         #wish-subtitle {
             font-family: 'Playfair Display', serif;
             font-style: italic;
-            font-size: clamp(16px, 1.5vw, 20px);
+            font-size: clamp(16px, 2vw, 22px);
             color: var(--sub-white);
-            line-height: 1.6;
+            line-height: 1.7;
             opacity: 0;
-            transform: scale(0.95);
-            text-shadow: 0 0 20px rgba(0,0,0,0.9);
-            transition: all 1s cubic-bezier(0.19, 1, 0.22, 1);
+            transform: translateY(15px);
+            text-shadow: 0 2px 20px rgba(0,0,0,1);
+            background: radial-gradient(circle, rgba(2,2,4,0.8) 0%, transparent 90%);
+            padding: 20px;
         }
 
         #center-piece {
@@ -84,17 +87,18 @@
         .date-title {
             font-family: 'Cinzel', serif;
             font-weight: 700;
-            font-size: clamp(60px, 10vw, 110px);
+            font-size: clamp(70px, 12vw, 130px); /* Thu nhỏ nhẹ tiêu đề */
             background: linear-gradient(to bottom, #fff, var(--gold), var(--pink));
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             opacity: 0;
-            filter: blur(20px);
+            filter: blur(25px);
             margin: 0;
+            animation: breatheTitle 10s infinite 3s;
         }
 
         .subtitle-final {
-            letter-spacing: 12px;
+            letter-spacing: 15px;
             font-size: 10px;
             color: var(--pink);
             opacity: 0;
@@ -104,19 +108,24 @@
 
         #hint {
             position: fixed;
-            bottom: 30px;
+            bottom: 20px;
             width: 100%;
             text-align: center;
-            font-size: 9px;
-            letter-spacing: 4px;
-            opacity: 0.4;
+            font-size: 8px;
+            letter-spacing: 5px;
+            opacity: 0.3;
             color: var(--gold);
             animation: hintPulse 3s infinite;
         }
 
+        @keyframes breatheTitle {
+            0%, 100% { transform: scale(1); filter: blur(0px) drop-shadow(0 0 15px var(--gold)); }
+            50% { transform: scale(1.02); filter: blur(0px) drop-shadow(0 0 30px var(--pink)); }
+        }
+
         @keyframes hintPulse {
-            0%, 100% { opacity: 0.2; transform: translateY(0); }
-            50% { opacity: 0.6; transform: translateY(-5px); }
+            0%, 100% { opacity: 0.1; }
+            50% { opacity: 0.5; }
         }
     </style>
 </head>
@@ -126,11 +135,7 @@
 
 <div id="ui-layer">
     <div id="labels-container"></div>
-    
-    <div id="subtitle-container">
-        <div id="wish-subtitle"></div>
-    </div>
-
+    <div id="subtitle-container"><div id="wish-subtitle"></div></div>
     <div id="center-piece">
         <h1 id="final-date" class="date-title">12/9</h1>
         <p id="final-sub" class="subtitle-final">ALWAYS TOGETHER</p>
@@ -185,10 +190,10 @@ function init() {
         caustics.push({
             x: Math.random() * width,
             y: Math.random() * height,
-            r: 200 + Math.random() * 300,
-            vx: (Math.random() - 0.5) * 0.2,
-            vy: (Math.random() - 0.5) * 0.2,
-            opacity: 0.03
+            r: 150 + Math.random() * 250,
+            vx: (Math.random() - 0.5) * 0.15,
+            vy: (Math.random() - 0.5) * 0.15,
+            opacity: 0.02 + Math.random() * 0.03 // Giảm độ sáng sân khấu xuống 1 tí
         });
     }
 }
@@ -204,25 +209,44 @@ class Particle {
     reset(x, y, isSpecial) {
         this.x = x || Math.random() * width;
         this.y = y || Math.random() * height;
-        this.vx = (Math.random() - 0.5) * 0.8;
-        this.vy = (Math.random() - 0.5) * 0.8;
+        this.vx = (Math.random() - 0.5) * 0.7;
+        this.vy = (Math.random() - 0.5) * 0.7;
         this.life = 1;
         this.decay = Math.random() * 0.005 + 0.003;
-        this.size = isSpecial ? Math.random() * 3 + 1.5 : Math.random() * 1.2;
+        this.size = isSpecial ? Math.random() * 2.5 + 1.2 : Math.random() * 1.1;
         this.color = isSpecial ? '#ffcf7d' : (Math.random() > 0.6 ? '#ff85a2' : '#fff');
     }
     update() {
+        let dx = this.x - mouse.x;
+        let dy = this.y - mouse.y;
+        let dist = Math.sqrt(dx*dx + dy*dy);
+        if (dist < 120 && mouse.x > 0) {
+            let force = (120 - dist) / 120;
+            let angle = Math.atan2(dy, dx);
+            this.vx += Math.cos(angle) * force * 0.05;
+            this.vy += Math.sin(angle) * force * 0.05;
+        }
         this.x += this.vx;
         this.y += this.vy;
+        this.vx *= 0.99;
+        this.vy *= 0.99;
         this.life -= this.decay;
-        if (this.life <= 0 && !this.isSpecial) this.reset();
+        if (this.life <= 0) {
+            if (this.isSpecial) particles.splice(particles.indexOf(this), 1);
+            else this.reset();
+        }
     }
     draw() {
         ctx.globalAlpha = this.life;
         ctx.fillStyle = this.color;
+        if (this.isSpecial) {
+            ctx.shadowBlur = 8;
+            ctx.shadowColor = this.color;
+        }
         ctx.beginPath();
         ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
         ctx.fill();
+        ctx.shadowBlur = 0;
     }
 }
 
@@ -231,14 +255,14 @@ class EtherealFlower {
         this.index = index;
         this.name = person.name;
         
-        // Bán kính vòng hoa được đẩy xa tâm một chút để nhường chỗ cho text
+        // ĐÃ ĐIỀU CHỈNH: Tăng bán kính vòng hoa lên một chút (0.35 thay vì 0.30)
         const radius = Math.min(width, height) * 0.35; 
         const angle = (index / 17) * Math.PI * 2 - Math.PI/2;
         this.x = centerX + Math.cos(angle) * radius;
         this.y = centerY + Math.sin(angle) * radius;
 
         this.size = 0;
-        this.maxSize = 35 + Math.random() * 10;
+        this.maxSize = 38 + Math.random() * 15; // Thu nhỏ hoa 1 tí
         this.hue = 330 + (index * 4);
         this.petals = 7 + Math.floor(Math.random() * 3);
         this.points = [];
@@ -261,11 +285,8 @@ class EtherealFlower {
         const label = document.createElement('div');
         label.className = 'member-name';
         label.innerText = this.name;
-        // Tên thành viên nằm phía ngoài vòng hoa
-        const labelRadius = Math.min(width, height) * 0.35 + 50;
-        const angle = (this.index / 17) * Math.PI * 2 - Math.PI/2;
-        label.style.left = `${centerX + Math.cos(angle) * labelRadius}px`;
-        label.style.top = `${centerY + Math.sin(angle) * labelRadius}px`;
+        label.style.left = `${this.x}px`;
+        label.style.top = `${this.y + 55}px`;
         labelsContainer.appendChild(label);
         this.uiLabel = label;
     }
@@ -284,17 +305,30 @@ class EtherealFlower {
             grad.addColorStop(0.5, `hsla(${this.hue + 15}, 80%, 60%, 0.3)`);
             grad.addColorStop(1, `hsla(${this.hue + 30}, 60%, 40%, 0)`);
             ctx.fillStyle = grad;
+            
+            if (this.size > this.maxSize * 0.9 && Math.random() > 0.93) {
+                ctx.shadowBlur = 8;
+                ctx.shadowColor = varColors.gold;
+                ctx.strokeStyle = `rgba(255, 207, 125, 0.5)`;
+                ctx.lineWidth = 0.4;
+            } else {
+                ctx.strokeStyle = 'transparent';
+            }
+
             ctx.beginPath();
             ctx.moveTo(0, 0);
             ctx.bezierCurveTo(this.size * p.curve, this.size * 0.5, this.size * 0.5, this.size * p.len, 0, this.size * p.len);
             ctx.bezierCurveTo(-this.size * 0.5, this.size * p.len, -this.size * p.curve, this.size * 0.5, 0, 0);
             ctx.fill();
+            ctx.stroke();
             ctx.restore();
         });
 
         ctx.beginPath();
         ctx.arc(0, 0, this.size/6, 0, Math.PI * 2);
         ctx.fillStyle = "#fff";
+        ctx.shadowBlur = 15;
+        ctx.shadowColor = "#fff";
         ctx.fill();
         ctx.restore();
     }
@@ -302,14 +336,19 @@ class EtherealFlower {
     update() {
         if (this.size < this.maxSize) {
             this.size += (this.maxSize - this.size) * 0.07;
-            if (this.size > this.maxSize * 0.5) {
+            if (this.size > this.maxSize * 0.7) {
                 this.uiLabel.style.opacity = 1;
+                this.uiLabel.style.transform = 'translate(-50%, -5px)';
             }
         }
     }
 }
 
-for (let i = 0; i < 120; i++) particles.push(new Particle());
+for (let i = 0; i < 150; i++) particles.push(new Particle());
+const varColors = {
+    gold: '#ffcf7d',
+    pink: '#ff85a2'
+};
 
 window.addEventListener('mousedown', (e) => {
     if (flowers.length < 17) {
@@ -317,7 +356,7 @@ window.addEventListener('mousedown', (e) => {
         const flower = new EtherealFlower(flowers.length, currentData);
         flowers.push(flower);
         updateSubtitle(currentData.wish);
-        for(let i=0; i<15; i++) {
+        for(let i=0; i<20; i++) {
             particles.push(new Particle(e.clientX, e.clientY, true));
         }
         document.getElementById('hint').style.opacity = 0;
@@ -329,40 +368,56 @@ window.addEventListener('mousedown', (e) => {
 
 function updateSubtitle(text) {
     wishSubtitle.style.opacity = 0;
-    wishSubtitle.style.transform = 'translate(-50%, -50%) scale(0.9)';
-    
+    wishSubtitle.style.transform = 'translateY(10px)';
     setTimeout(() => {
         wishSubtitle.innerText = text;
-        wishSubtitle.style.opacity = 1;
-        wishSubtitle.style.transform = 'scale(1)';
-    }, 300);
+        wishSubtitle.style.transition = 'none';
+        setTimeout(() => {
+            wishSubtitle.style.transition = 'all 1.1s cubic-bezier(0.19, 1, 0.22, 1)';
+            wishSubtitle.style.opacity = 1;
+            wishSubtitle.style.transform = 'translateY(0)';
+        }, 50);
+    }, 400);
 }
 
 function showFinalDate() {
-    wishSubtitle.style.display = 'none';
+    wishSubtitle.style.opacity = 0;
     const fd = document.getElementById('final-date');
     const fs = document.getElementById('final-sub');
-    fd.style.transition = "all 4s ease-out";
+    fd.style.transition = "all 5s cubic-bezier(0.19, 1, 0.22, 1)";
     fd.style.opacity = 1;
     fd.style.filter = "blur(0px)";
     setTimeout(() => {
-        fs.style.opacity = 0.6;
-    }, 2000);
+        fs.style.opacity = 0.5;
+        fs.style.transition = "opacity 2.5s ease";
+    }, 2500);
+    particles.forEach(p => {
+        p.vx = (centerX - p.x) * 0.04;
+        p.vy = (centerY - p.y) * 0.04;
+    });
 }
+
+window.addEventListener('mousemove', (e) => {
+    mouse.x = e.clientX;
+    mouse.y = e.clientY;
+});
 
 function animate() {
     frame++;
-    ctx.fillStyle = 'rgba(2, 2, 4, 0.2)';
+    ctx.globalAlpha = 1;
+    ctx.fillStyle = 'rgba(2, 2, 4, 0.25)';
     ctx.fillRect(0, 0, width, height);
 
     ctx.globalCompositeOperation = 'lighter';
     caustics.forEach(c => {
-        c.x += c.vx; c.y += c.vy;
+        c.x += c.vx;
+        c.y += c.vy;
         if(c.x < 0 || c.x > width) c.vx *= -1;
         if(c.y < 0 || c.y > height) c.vy *= -1;
         ctx.globalAlpha = c.opacity;
         let grad = ctx.createRadialGradient(c.x, c.y, 0, c.x, c.y, c.r);
-        grad.addColorStop(0, '#ffcf7d22');
+        grad.addColorStop(0, '#fff');
+        grad.addColorStop(0.3, varColors.gold);
         grad.addColorStop(1, 'transparent');
         ctx.fillStyle = grad;
         ctx.beginPath();
@@ -371,10 +426,9 @@ function animate() {
     });
     ctx.globalCompositeOperation = 'source-over';
 
-    particles.forEach((p, i) => {
+    particles.forEach(p => {
         p.update();
         p.draw();
-        if(p.life <= 0 && p.isSpecial) particles.splice(i, 1);
     });
 
     flowers.forEach(f => {
