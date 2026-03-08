@@ -1,299 +1,357 @@
-import os
-import json
-import time
-import random
-import hashlib
-from datetime import datetime
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <title>Ethereal Bloom 12/9</title>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@200;400&family=Playfair+Display:italic@1&display=swap" rel="stylesheet">
+    <style>
+        body {
+            margin: 0;
+            background: #030305;
+            color: #fff;
+            overflow: hidden;
+            font-family: 'Montserrat', sans-serif;
+            user-select: none;
+        }
 
-DATA_FILE = "capsule_data.json"
+        canvas {
+            display: block;
+            filter: contrast(110%) brightness(110%);
+        }
 
-# =============================
-# Utility functions
-# =============================
+        #ui {
+            position: fixed;
+            inset: 0;
+            pointer-events: none;
+            z-index: 100;
+        }
 
-def slow_print(text, delay=0.02):
-    for c in text:
-        print(c, end="", flush=True)
-        time.sleep(delay)
-    print()
+        .name-label {
+            position: absolute;
+            font-size: 13px;
+            letter-spacing: 3px;
+            text-transform: uppercase;
+            color: rgba(255, 255, 255, 0.7);
+            transform: translate(-50%, -50%);
+            white-space: nowrap;
+            transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            text-shadow: 0 0 10px rgba(255, 182, 193, 0.5);
+        }
 
-def divider():
-    print("\n" + "="*50 + "\n")
+        .final-date {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-family: 'Playfair Display', serif;
+            font-size: 120px;
+            font-style: italic;
+            background: linear-gradient(45deg, #fff, #ffd700, #ff85a2);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            opacity: 0;
+            filter: blur(10px);
+        }
 
-def clear():
-    os.system("cls" if os.name == "nt" else "clear")
+        #guide {
+            position: fixed;
+            bottom: 40px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-weight: 200;
+            font-size: 10px;
+            letter-spacing: 5px;
+            opacity: 0.4;
+        }
+    </style>
+</head>
+<body>
 
-# =============================
-# Encryption system
-# =============================
+<div id="ui">
+    <div id="labels"></div>
+    <div id="final-date" class="final-date">12 / 9</div>
+</div>
+<div id="guide">TAP TO AWAKEN THE SOUL OF 17</div>
+<canvas id="canvas"></canvas>
 
-def generate_key(password):
-    return hashlib.sha256(password.encode()).hexdigest()
+<script>
+/**
+ * ETHEREAL BLOOM SYSTEM
+ * Một hệ thống Generative Art sử dụng toán học Fractal và Particle Physics
+ */
 
-def encrypt(text, password):
-    key = generate_key(password)
-    encrypted = ""
+const canvas = document.getElementById('canvas');
+const ctx = canvas.getContext('2d');
+const finalDate = document.getElementById('final-date');
+const labelsContainer = document.getElementById('labels');
 
-    for i, c in enumerate(text):
-        k = ord(key[i % len(key)])
-        encrypted += chr((ord(c) + k) % 256)
+let width, height, centerX, centerY;
+let particles = [];
+let flowers = [];
+let frame = 0;
+let mouse = { x: -1000, y: -1000, active: false };
 
-    return encrypted
+// Danh sách 17 thành viên
+const members = [
+    "Huyền My", "Linh Đan", "Minh Tú", "Thanh Trúc", "Phương Nghi",
+    "Gia Hân", "Tuệ Lâm", "Quỳnh Chi", "Bảo Ngọc", "Ánh Dương",
+    "Khả ái", "Mai Anh", "Ngọc Diệp", "Thảo Vy", "Yến Nhi",
+    "Tố Uyên", "Diễm Quỳnh"
+];
 
-def decrypt(text, password):
-    key = generate_key(password)
-    decrypted = ""
+function init() {
+    width = window.innerWidth;
+    height = window.innerHeight;
+    centerX = width / 2;
+    centerY = height / 2;
+    canvas.width = width;
+    canvas.height = height;
+}
 
-    for i, c in enumerate(text):
-        k = ord(key[i % len(key)])
-        decrypted += chr((ord(c) - k) % 256)
+window.addEventListener('resize', init);
+init();
 
-    return decrypted
+// --- Lớp vật lý các điểm sáng trôi nổi ---
+class GlowParticle {
+    constructor() {
+        this.reset();
+    }
+    reset() {
+        this.x = Math.random() * width;
+        this.y = Math.random() * height;
+        this.vx = (Math.random() - 0.5) * 0.5;
+        this.vy = (Math.random() - 0.5) * 0.5;
+        this.size = Math.random() * 1.5;
+        this.alpha = Math.random() * 0.5;
+        this.hue = Math.random() > 0.5 ? 340 : 40;
+    }
+    update() {
+        // Tác động của chuột (Fluid effect)
+        let dx = mouse.x - this.x;
+        let dy = mouse.y - this.y;
+        let dist = Math.sqrt(dx*dx + dy*dy);
+        if (dist < 200) {
+            let angle = Math.atan2(dy, dx);
+            this.vx -= Math.cos(angle) * 0.02;
+            this.vy -= Math.sin(angle) * 0.02;
+        }
 
-# =============================
-# Data storage
-# =============================
+        this.x += this.vx;
+        this.y += this.vy;
+        
+        if (this.x < 0 || this.x > width || this.y < 0 || this.y > height) this.reset();
+    }
+    draw() {
+        ctx.fillStyle = `hsla(${this.hue}, 100%, 80%, ${this.alpha})`;
+        ctx.beginPath();
+        ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+        ctx.fill();
+    }
+}
 
-def load_data():
-    if not os.path.exists(DATA_FILE):
-        return []
-    
-    with open(DATA_FILE, "r") as f:
-        return json.load(f)
-
-def save_data(data):
-    with open(DATA_FILE, "w") as f:
-        json.dump(data, f, indent=4)
-
-# =============================
-# Random reflections (AI-like)
-# =============================
-
-REFLECTIONS = [
-
-"Time doesn't change us. It reveals us.",
-"The past whispers, but the future listens.",
-"Every memory is a message from who you were.",
-"You trusted the future with this moment.",
-"Some thoughts only make sense years later.",
-"You once cared enough to write this.",
-"Moments fade, meaning grows.",
-"The person who wrote this believed in tomorrow."
-
-]
-
-def ai_reflection():
-    return random.choice(REFLECTIONS)
-
-# =============================
-# Capsule creation
-# =============================
-
-def create_capsule():
-
-    divider()
-    slow_print("Create a new Time Capsule")
-    
-    title = input("Title: ")
-    
-    message = input("Write your message for the future:\n")
-
-    password = input("Set a password: ")
-
-    open_time = input("Open date (YYYY-MM-DD HH:MM): ")
-
-    try:
-        unlock_time = datetime.strptime(open_time, "%Y-%m-%d %H:%M")
-    except:
-        slow_print("Invalid date format.")
-        return
-
-    encrypted = encrypt(message, password)
-
-    capsule = {
-
-        "title": title,
-        "message": encrypted,
-        "unlock_time": open_time,
-        "created": str(datetime.now())
-
+// --- Lớp hoa nghệ thuật ---
+class EtherealFlower {
+    constructor(index, name) {
+        this.index = index;
+        this.name = name;
+        this.isFinal = false;
+        
+        // Sắp xếp theo vòng tròn đa giác
+        const total = 17;
+        const radius = Math.min(width, height) * 0.32;
+        const angle = (index / total) * Math.PI * 2 - Math.PI / 2;
+        
+        this.targetX = centerX + Math.cos(angle) * radius;
+        this.targetY = centerY + Math.sin(angle) * radius;
+        
+        this.x = this.targetX;
+        this.y = this.targetY;
+        
+        this.bloom = 0;
+        this.hue = 330 + (index * 5);
+        this.rotation = Math.random() * Math.PI;
+        this.petals = [];
+        this.initPetals();
+        this.createLabel();
     }
 
-    data = load_data()
-    data.append(capsule)
-    save_data(data)
-
-    slow_print("Capsule sealed successfully.")
-
-# =============================
-# View capsules
-# =============================
-
-def list_capsules():
-
-    divider()
-
-    data = load_data()
-
-    if not data:
-        slow_print("No capsules found.")
-        return
-
-    for i, c in enumerate(data):
-
-        slow_print(f"{i+1}. {c['title']} (unlock: {c['unlock_time']})")
-
-# =============================
-# Open capsule
-# =============================
-
-def open_capsule():
-
-    data = load_data()
-
-    if not data:
-        slow_print("No capsules.")
-        return
-
-    list_capsules()
-
-    try:
-        idx = int(input("Select capsule: ")) - 1
-    except:
-        return
-
-    if idx < 0 or idx >= len(data):
-        return
-
-    capsule = data[idx]
-
-    unlock_time = datetime.strptime(capsule["unlock_time"], "%Y-%m-%d %H:%M")
-
-    if datetime.now() < unlock_time:
-
-        slow_print("This capsule is locked in time.")
-        slow_print(f"Opens at: {unlock_time}")
-        return
-
-    password = input("Enter password: ")
-
-    try:
-        message = decrypt(capsule["message"], password)
-    except:
-        slow_print("Wrong password.")
-        return
-
-    divider()
-
-    slow_print("Capsule opened.\n")
-
-    slow_print(message, 0.03)
-
-    divider()
-
-    slow_print("Reflection:")
-    slow_print(ai_reflection())
-
-# =============================
-# Easter eggs
-# =============================
-
-def secret_mode():
-
-    clear()
-
-    slow_print("Accessing hidden archive...")
-
-    time.sleep(1)
-
-    slow_print("Some secrets aren't locked by time.")
-
-    slow_print("They are locked by curiosity.")
-
-    time.sleep(1)
-
-    slow_print("Here is a message:")
-
-    slow_print("If you discovered this, you're the kind of person who explores beyond menus.")
-
-# =============================
-# Random glitch effect
-# =============================
-
-def glitch():
-
-    chars = "!@#$%^&*()_+-=[]{};:"
-
-    for _ in range(10):
-
-        line = "".join(random.choice(chars) for _ in range(50))
-        print(line)
-        time.sleep(0.05)
-
-# =============================
-# Animated intro
-# =============================
-
-def intro():
-
-    clear()
-
-    slow_print("Initializing Time Capsule System...",0.04)
-
-    time.sleep(0.5)
-
-    glitch()
-
-    slow_print("System Ready.")
-
-# =============================
-# Main menu
-# =============================
-
-def menu():
-
-    while True:
-
-        divider()
-
-        slow_print("DIGITAL TIME CAPSULE")
-
-        slow_print("1. Create Capsule")
-        slow_print("2. List Capsules")
-        slow_print("3. Open Capsule")
-        slow_print("4. Exit")
-
-        choice = input("> ")
-
-        if choice == "1":
-            create_capsule()
-
-        elif choice == "2":
-            list_capsules()
-
-        elif choice == "3":
-            open_capsule()
-
-        elif choice == "4":
-            slow_print("Goodbye.")
-            break
-
-        elif choice.lower() == "oracle":
-
-            secret_mode()
-
-        else:
-            slow_print("Unknown command.")
-
-# =============================
-# Main
-# =============================
-
-def main():
-
-    intro()
-
-    menu()
-
-if __name__ == "__main__":
-    main()
+    initPetals() {
+        const petalCount = 8;
+        for (let i = 0; i < petalCount; i++) {
+            this.petals.push({
+                angle: (i / petalCount) * Math.PI * 2,
+                length: 40 + Math.random() * 30,
+                width: 15 + Math.random() * 10,
+                curve: 0.5 + Math.random() * 0.5
+            });
+        }
+    }
+
+    createLabel() {
+        const label = document.createElement('div');
+        label.className = 'name-label';
+        label.innerText = this.name;
+        label.style.left = `${this.x}px`;
+        label.style.top = `${this.y + 60}px`;
+        labelsContainer.appendChild(label);
+        this.domLabel = label;
+    }
+
+    draw() {
+        if (this.bloom <= 0.01) return;
+
+        ctx.save();
+        ctx.translate(this.x, this.y);
+        ctx.rotate(this.rotation + Math.sin(frame * 0.01) * 0.1);
+
+        // Vẽ từng cánh hoa bằng kỹ thuật shadow blur để tạo độ nhòe nghệ thuật
+        this.petals.forEach((p, i) => {
+            ctx.save();
+            ctx.rotate(p.angle);
+            
+            const curLen = p.length * this.bloom;
+            const curWid = p.width * this.bloom;
+
+            const grad = ctx.createLinearGradient(0, 0, 0, curLen);
+            grad.addColorStop(0, `hsla(${this.hue}, 90%, 85%, ${0.6 * this.bloom})`);
+            grad.addColorStop(1, `hsla(${this.hue + 20}, 70%, 50%, 0)`);
+
+            ctx.fillStyle = grad;
+            ctx.shadowBlur = 15 * this.bloom;
+            ctx.shadowColor = `hsla(${this.hue}, 100%, 70%, 0.5)`;
+
+            ctx.beginPath();
+            ctx.moveTo(0, 0);
+            ctx.bezierCurveTo(curWid, curLen * 0.3, curWid, curLen * 0.7, 0, curLen);
+            ctx.bezierCurveTo(-curWid, curLen * 0.7, -curWid, curLen * 0.3, 0, 0);
+            ctx.fill();
+            ctx.restore();
+        });
+
+        // Nhụy hoa rực sáng
+        ctx.beginPath();
+        ctx.arc(0, 0, 4 * this.bloom, 0, Math.PI * 2);
+        ctx.fillStyle = "#fff";
+        ctx.shadowBlur = 20;
+        ctx.shadowColor = "#fff";
+        ctx.fill();
+
+        ctx.restore();
+        
+        // Cập nhật label DOM
+        this.domLabel.style.opacity = this.bloom;
+        this.domLabel.style.transform = `translate(-50%, -50%) scale(${0.5 + this.bloom * 0.5})`;
+    }
+
+    update() {
+        if (this.bloom < 1) this.bloom += 0.015;
+        this.rotation += 0.002;
+    }
+}
+
+// --- Khởi tạo 200 hạt sáng nền ---
+for (let i = 0; i < 200; i++) particles.push(new GlowParticle());
+
+// --- Xử lý sự kiện chính ---
+window.addEventListener('mousedown', (e) => {
+    if (flowers.length < 17) {
+        const nextName = members[flowers.length];
+        const flower = new EtherealFlower(flowers.length, nextName);
+        flowers.push(flower);
+        
+        // Ẩn hướng dẫn
+        if (flowers.length === 1) document.getElementById('guide').style.opacity = 0;
+
+        // Bắn pháo hoa li ti tại chỗ mọc
+        for(let i=0; i<30; i++) {
+            let p = new GlowParticle();
+            p.x = e.clientX;
+            p.y = e.clientY;
+            p.vx = (Math.random() - 0.5) * 10;
+            p.vy = (Math.random() - 0.5) * 10;
+            particles.push(p);
+        }
+    } else if (flowers.length === 17) {
+        // Kích hoạt Bông hoa Cuối cùng (12/9)
+        triggerFinalEvent();
+        flowers.push({ isFinal: true }); // Flag để không chạy tiếp
+    }
+});
+
+function triggerFinalEvent() {
+    // Hiệu ứng hút hạt vào tâm
+    particles.forEach(p => {
+        let dx = centerX - p.x;
+        let dy = centerY - p.y;
+        let angle = Math.atan2(dy, dx);
+        p.vx = Math.cos(angle) * 15;
+        p.vy = Math.sin(angle) * 15;
+    });
+
+    // Hiện 12/9
+    setTimeout(() => {
+        finalDate.style.opacity = 1;
+        finalDate.style.filter = "blur(0px)";
+        finalDate.style.transition = "all 3s ease";
+        
+        // Rung chuyển màn hình nhẹ
+        document.body.style.animation = "shake 0.5s ease-in-out";
+    }, 500);
+}
+
+// Cập nhật tọa độ chuột
+window.addEventListener('mousemove', (e) => {
+    mouse.x = e.clientX;
+    mouse.y = e.clientY;
+});
+
+function animate() {
+    frame++;
+    // Vẽ nền mờ để tạo trail
+    ctx.fillStyle = 'rgba(3, 3, 5, 0.15)';
+    ctx.fillRect(0, 0, width, height);
+
+    // Vẽ hạt sáng
+    particles.forEach(p => {
+        p.update();
+        p.draw();
+    });
+
+    // Vẽ hoa
+    flowers.forEach(f => {
+        if (!f.isFinal) {
+            f.update();
+            f.draw();
+        }
+    });
+
+    // Tạo hiệu ứng lấp lánh ngẫu nhiên
+    if (frame % 10 === 0) {
+        ctx.fillStyle = '#fff';
+        ctx.beginPath();
+        ctx.arc(Math.random()*width, Math.random()*height, 0.5, 0, Math.PI*2);
+        ctx.fill();
+    }
+
+    requestAnimationFrame(animate);
+}
+
+animate();
+
+// CSS Shake Animation cho Finale
+const style = document.createElement('style');
+style.innerHTML = `
+    @keyframes shake {
+        0% { transform: translate(1px, 1px) rotate(0deg); }
+        20% { transform: translate(-3px, 0px) rotate(1deg); }
+        40% { transform: translate(3px, 2px) rotate(0deg); }
+        60% { transform: translate(-3px, 1px) rotate(-1deg); }
+        80% { transform: translate(-1px, -1px) rotate(1deg); }
+        100% { transform: translate(1px, -2px) rotate(0deg); }
+    }
+`;
+document.head.appendChild(style);
+
+</script>
+</body>
+</html>
