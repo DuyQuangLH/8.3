@@ -2,13 +2,13 @@
 <html lang="vi">
 <head>
     <meta charset="UTF-8">
-    <title>12/9 Eternal Symphony - Dual Subtitle Edition</title>
+    <title>12/9 Eternal Symphony - Luminance Edition</title>
     <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&family=Montserrat:wght@200;400&family=Playfair+Display:italic@1&display=swap" rel="stylesheet">
     <style>
         :root {
             --gold: #ffcf7d;
             --pink: #ff85a2;
-            --dark: #030306;
+            --dark: #020204; /* Tối sâu hơn một chút */
             --sub-white: rgba(255, 255, 255, 0.85);
         }
 
@@ -50,31 +50,29 @@
             transition: opacity 1.5s ease, transform 1s ease;
         }
 
-        /* Dual Subtitle System */
-        #subtitle-system {
+        #subtitle-container {
             position: fixed;
-            bottom: 70px;
-            width: 100%;
-            display: flex;
-            justify-content: space-around;
-            padding: 0 50px;
-            box-sizing: border-box;
+            bottom: 40px; /* Đẩy xuống thấp hơn */
+            left: 50%;
+            transform: translateX(-50%);
+            width: 90%;
+            max-width: 900px;
+            text-align: center;
             z-index: 20;
         }
 
-        .sub-part {
+        #wish-subtitle {
             font-family: 'Playfair Display', serif;
             font-style: italic;
-            font-size: clamp(14px, 1.5vw, 18px);
+            font-size: clamp(15px, 1.8vw, 19px);
             color: var(--sub-white);
-            width: 40%;
+            line-height: 1.7;
             opacity: 0;
-            transition: all 1.2s cubic-bezier(0.19, 1, 0.22, 1);
-            text-shadow: 0 2px 10px rgba(0,0,0,0.8);
+            transform: translateY(15px);
+            text-shadow: 0 2px 15px rgba(0,0,0,0.8);
+            background: radial-gradient(circle, rgba(0,0,0,0.4) 0%, transparent 80%);
+            padding: 5px 20px;
         }
-
-        #sub-left { text-align: right; transform: translateX(-20px); }
-        #sub-right { text-align: left; transform: translateX(20px); color: var(--gold); }
 
         #center-piece {
             position: absolute;
@@ -87,7 +85,7 @@
         .date-title {
             font-family: 'Cinzel', serif;
             font-weight: 700;
-            font-size: clamp(80px, 15vw, 150px);
+            font-size: clamp(70px, 12vw, 130px); /* Thu nhỏ nhẹ tiêu đề */
             background: linear-gradient(to bottom, #fff, var(--gold), var(--pink));
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
@@ -98,28 +96,34 @@
         }
 
         .subtitle-final {
-            letter-spacing: 18px;
-            font-size: clamp(8px, 1.2vw, 12px);
+            letter-spacing: 15px;
+            font-size: 10px;
             color: var(--pink);
             opacity: 0;
-            margin-top: -15px;
+            margin-top: -10px;
             text-shadow: 0 0 10px var(--pink);
         }
 
         #hint {
             position: fixed;
-            bottom: 30px;
+            bottom: 20px;
             width: 100%;
             text-align: center;
             font-size: 8px;
-            letter-spacing: 6px;
-            opacity: 0.4;
+            letter-spacing: 5px;
+            opacity: 0.3;
             color: var(--gold);
+            animation: hintPulse 3s infinite;
         }
 
         @keyframes breatheTitle {
-            0%, 100% { transform: scale(1); filter: drop-shadow(0 0 20px var(--gold)); }
-            50% { transform: scale(1.03); filter: drop-shadow(0 0 40px var(--pink)); }
+            0%, 100% { transform: scale(1); filter: blur(0px) drop-shadow(0 0 15px var(--gold)); }
+            50% { transform: scale(1.02); filter: blur(0px) drop-shadow(0 0 30px var(--pink)); }
+        }
+
+        @keyframes hintPulse {
+            0%, 100% { opacity: 0.1; }
+            50% { opacity: 0.5; }
         }
     </style>
 </head>
@@ -129,53 +133,46 @@
 
 <div id="ui-layer">
     <div id="labels-container"></div>
-    
-    <div id="subtitle-system">
-        <div id="sub-left" class="sub-part"></div>
-        <div id="sub-right" class="sub-part"></div>
-    </div>
-
+    <div id="subtitle-container"><div id="wish-subtitle"></div></div>
     <div id="center-piece">
         <h1 id="final-date" class="date-title">12/9</h1>
         <p id="final-sub" class="subtitle-final">ALWAYS TOGETHER</p>
     </div>
 </div>
 
-<div id="hint">CHẠM ĐỂ KHỞI TẠO GIAI ĐIỆU ÁNH SÁNG</div>
+<div id="hint">CHẠM NHẸ ĐỂ KHỞI ĐẦU SYMPHONY</div>
 
 <script>
 const canvas = document.getElementById('canvas');
 const ctx = canvas.getContext('2d');
 const labelsContainer = document.getElementById('labels-container');
-const subLeft = document.getElementById('sub-left');
-const subRight = document.getElementById('sub-right');
+const wishSubtitle = document.getElementById('wish-subtitle');
 
 let width, height, centerX, centerY;
 let particles = [];
 let flowers = [];
-let caustics = [];
+let caustics = []; 
 let frame = 0;
 let mouse = { x: -1000, y: -1000 };
 
-// 17 Thành viên và Lời chúc (đã được tối ưu để ngắt đôi)
 const data = [
-    { name: "Huyền My", wish: "Nụ cười rạng rỡ | Như đóa hướng dương đón nắng" },
-    { name: "Linh Đan", wish: "Giữ sự dịu dàng | Và tâm hồn an yên giữa đời" },
-    { name: "Minh Tú", wish: "Tỏa sáng riêng biệt | Vì bạn là phiên bản duy nhất" },
-    { name: "Thanh Trúc", wish: "Mỗi ngày trôi qua | Đều là bản nhạc đầy cảm hứng" },
-    { name: "Phương Nghi", wish: "Điều tốt đẹp nhất | Sẽ tìm đến cô gái kiên cường" },
-    { name: "Gia Hân", wish: "Hạnh phúc đong đầy | Thành công trên lối bạn chọn" },
-    { name: "Tuệ Lâm", wish: "Thông tuệ bản lĩnh | Nguồn năng lượng cho mọi người" },
-    { name: "Quỳnh Chi", wish: "Xinh đẹp rạng ngời | Tỏa hương ngát như hoa Quỳnh" },
-    { name: "Bảo Ngọc", wish: "Viên ngọc quý giá | Hãy luôn tự tin trân trọng mình" },
-    { name: "Ánh Dương", wish: "Mang theo hơi ấm | Đến mọi nơi bạn đi qua" },
-    { name: "Khả Ái", wish: "Thế giới dịu dàng | Với cô gái đáng yêu như bạn" },
-    { name: "Mai Anh", wish: "Thanh xuân rực rỡ | Không hối tiếc những đam mê" },
-    { name: "Ngọc Diệp", wish: "Lá ngọc cành vàng | Thanh cao và tràn đầy sức sống" },
-    { name: "Thảo Vy", wish: "Giấc mơ của bạn | Sẽ sớm trở thành hiện thực" },
-    { name: "Yến Nhi", wish: "Chú chim nhỏ tự do | Sải cánh giữa bầu trời riêng" },
-    { name: "Tố Uyên", wish: "Tìm thấy niềm vui | Trong từng điều nhỏ nhất" },
-    { name: "Diễm Quỳnh", wish: "Vẻ đẹp tâm hồn | Tỏa sáng từ trái tim ấm áp" }
+    { name: "Huyền My", wish: "Mong nụ cười của bạn luôn rạng rỡ như đóa hướng dương đón nắng." },
+    { name: "Linh Đan", wish: "Chúc bạn luôn giữ được sự dịu dàng và tâm hồn an yên giữa cuộc sống." },
+    { name: "Minh Tú", wish: "Hãy tỏa sáng theo cách riêng của bạn, vì bạn là phiên bản duy nhất." },
+    { name: "Thanh Trúc", wish: "Chúc bạn mỗi ngày đều là một bản nhạc ngọt ngào và đầy cảm hứng." },
+    { name: "Phương Nghi", wish: "Mong những điều tốt đẹp nhất sẽ luôn tìm đến với cô gái kiên cường." },
+    { name: "Gia Hân", wish: "Chúc bạn luôn hạnh phúc và gặt hái được nhiều thành công trên con đường đã chọn." },
+    { name: "Tuệ Lâm", wish: "Sự thông tuệ và bản lĩnh của bạn luôn là nguồn năng lượng tích cực cho mọi người." },
+    { name: "Quỳnh Chi", wish: "Chúc bạn mãi xinh đẹp và tỏa hương thơm ngát như loài hoa Quỳnh." },
+    { name: "Bảo Ngọc", wish: "Bạn là viên ngọc quý, hãy luôn tự tin và trân trọng bản thân mình nhé." },
+    { name: "Ánh Dương", wish: "Chúc bạn luôn mang theo hơi ấm và ánh sáng đến mọi nơi bạn đi qua." },
+    { name: "Khả Ái", wish: "Mong thế giới này luôn dịu dàng với một người đáng yêu như bạn." },
+    { name: "Mai Anh", wish: "Chúc bạn một thanh xuân rực rỡ và không hối tiếc với những đam mê." },
+    { name: "Ngọc Diệp", wish: "Như lá ngọc cành vàng, chúc bạn luôn thanh cao và tràn đầy sức sống." },
+    { name: "Thảo Vy", wish: "Mong những giấc mơ của bạn sẽ sớm trở thành hiện thực tươi đẹp." },
+    { name: "Yến Nhi", wish: "Hãy luôn là chú chim nhỏ tự do, sải cánh bay giữa bầu trời của riêng mình." },
+    { name: "Tố Uyên", wish: "Chúc bạn tìm thấy niềm vui trong từng điều nhỏ nhặt nhất của cuộc sống." },
+    { name: "Diễm Quỳnh", wish: "Vẻ đẹp của bạn không chỉ ở vẻ ngoài mà còn ở trái tim ấm áp." }
 ];
 
 function init() {
@@ -191,10 +188,10 @@ function init() {
         caustics.push({
             x: Math.random() * width,
             y: Math.random() * height,
-            r: 200 + Math.random() * 300,
+            r: 150 + Math.random() * 250,
             vx: (Math.random() - 0.5) * 0.15,
             vy: (Math.random() - 0.5) * 0.15,
-            opacity: 0.015 + Math.random() * 0.02 // Đã giảm độ sáng sân khấu
+            opacity: 0.02 + Math.random() * 0.03 // Giảm độ sáng sân khấu xuống 1 tí
         });
     }
 }
@@ -210,22 +207,22 @@ class Particle {
     reset(x, y, isSpecial) {
         this.x = x || Math.random() * width;
         this.y = y || Math.random() * height;
-        this.vx = (Math.random() - 0.5) * 0.8;
-        this.vy = (Math.random() - 0.5) * 0.8;
+        this.vx = (Math.random() - 0.5) * 0.7;
+        this.vy = (Math.random() - 0.5) * 0.7;
         this.life = 1;
         this.decay = Math.random() * 0.005 + 0.003;
-        this.size = isSpecial ? Math.random() * 2.5 + 1.2 : Math.random() * 1.2;
+        this.size = isSpecial ? Math.random() * 2.5 + 1.2 : Math.random() * 1.1;
         this.color = isSpecial ? '#ffcf7d' : (Math.random() > 0.6 ? '#ff85a2' : '#fff');
     }
     update() {
         let dx = this.x - mouse.x;
         let dy = this.y - mouse.y;
         let dist = Math.sqrt(dx*dx + dy*dy);
-        if (dist < 130 && mouse.x > 0) {
-            let force = (130 - dist) / 130;
+        if (dist < 120 && mouse.x > 0) {
+            let force = (120 - dist) / 120;
             let angle = Math.atan2(dy, dx);
-            this.vx += Math.cos(angle) * force * 0.06;
-            this.vy += Math.sin(angle) * force * 0.06;
+            this.vx += Math.cos(angle) * force * 0.05;
+            this.vy += Math.sin(angle) * force * 0.05;
         }
         this.x += this.vx;
         this.y += this.vy;
@@ -240,9 +237,14 @@ class Particle {
     draw() {
         ctx.globalAlpha = this.life;
         ctx.fillStyle = this.color;
+        if (this.isSpecial) {
+            ctx.shadowBlur = 8;
+            ctx.shadowColor = this.color;
+        }
         ctx.beginPath();
         ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
         ctx.fill();
+        ctx.shadowBlur = 0;
     }
 }
 
@@ -250,12 +252,14 @@ class EtherealFlower {
     constructor(index, person) {
         this.index = index;
         this.name = person.name;
-        const radius = Math.min(width, height) * 0.35;
+        
+        const radius = Math.min(width, height) * 0.30; // Thu nhỏ vòng hoa 1 tí
         const angle = (index / 17) * Math.PI * 2 - Math.PI/2;
         this.x = centerX + Math.cos(angle) * radius;
         this.y = centerY + Math.sin(angle) * radius;
+
         this.size = 0;
-        this.maxSize = 42 + Math.random() * 15;
+        this.maxSize = 38 + Math.random() * 15; // Thu nhỏ hoa 1 tí
         this.hue = 330 + (index * 4);
         this.petals = 7 + Math.floor(Math.random() * 3);
         this.points = [];
@@ -263,47 +267,69 @@ class EtherealFlower {
         this.initFlower();
         this.createLabel();
     }
+
     initFlower() {
         for (let i = 0; i < this.petals; i++) {
-            this.points.push({ rot: (i / this.petals) * Math.PI * 2, len: 1.2 + Math.random() * 0.3, curve: 0.6 + Math.random() * 0.3 });
+            this.points.push({
+                rot: (i / this.petals) * Math.PI * 2,
+                len: 1.1 + Math.random() * 0.3,
+                curve: 0.6 + Math.random() * 0.3
+            });
         }
     }
+
     createLabel() {
         const label = document.createElement('div');
         label.className = 'member-name';
         label.innerText = this.name;
         label.style.left = `${this.x}px`;
-        label.style.top = `${this.y + 65}px`;
+        label.style.top = `${this.y + 55}px`;
         labelsContainer.appendChild(label);
         this.uiLabel = label;
     }
+
     draw() {
         if (this.size < 0.1) return;
         ctx.save();
         ctx.translate(this.x, this.y);
         ctx.rotate(frame * 0.005 + Math.sin(frame * 0.02 + this.wobblePhase) * 0.05);
+
         this.points.forEach(p => {
             ctx.save();
             ctx.rotate(p.rot);
             const grad = ctx.createLinearGradient(0, 0, 0, this.size * p.len);
-            grad.addColorStop(0, `hsla(${this.hue}, 100%, 88%, 0.85)`);
-            grad.addColorStop(1, `hsla(${this.hue + 20}, 60%, 40%, 0)`);
+            grad.addColorStop(0, `hsla(${this.hue}, 100%, 88%, 0.8)`);
+            grad.addColorStop(0.5, `hsla(${this.hue + 15}, 80%, 60%, 0.3)`);
+            grad.addColorStop(1, `hsla(${this.hue + 30}, 60%, 40%, 0)`);
             ctx.fillStyle = grad;
+            
+            if (this.size > this.maxSize * 0.9 && Math.random() > 0.93) {
+                ctx.shadowBlur = 8;
+                ctx.shadowColor = varColors.gold;
+                ctx.strokeStyle = `rgba(255, 207, 125, 0.5)`;
+                ctx.lineWidth = 0.4;
+            } else {
+                ctx.strokeStyle = 'transparent';
+            }
+
             ctx.beginPath();
             ctx.moveTo(0, 0);
             ctx.bezierCurveTo(this.size * p.curve, this.size * 0.5, this.size * 0.5, this.size * p.len, 0, this.size * p.len);
             ctx.bezierCurveTo(-this.size * 0.5, this.size * p.len, -this.size * p.curve, this.size * 0.5, 0, 0);
             ctx.fill();
+            ctx.stroke();
             ctx.restore();
         });
+
         ctx.beginPath();
-        ctx.arc(0, 0, this.size/5, 0, Math.PI * 2);
+        ctx.arc(0, 0, this.size/6, 0, Math.PI * 2);
         ctx.fillStyle = "#fff";
         ctx.shadowBlur = 15;
         ctx.shadowColor = "#fff";
         ctx.fill();
         ctx.restore();
     }
+
     update() {
         if (this.size < this.maxSize) {
             this.size += (this.maxSize - this.size) * 0.07;
@@ -315,15 +341,21 @@ class EtherealFlower {
     }
 }
 
-for (let i = 0; i < 140; i++) particles.push(new Particle());
-const varColors = { gold: '#ffcf7d', pink: '#ff85a2' };
+for (let i = 0; i < 150; i++) particles.push(new Particle());
+const varColors = {
+    gold: '#ffcf7d',
+    pink: '#ff85a2'
+};
 
 window.addEventListener('mousedown', (e) => {
     if (flowers.length < 17) {
         const currentData = data[flowers.length];
-        flowers.push(new EtherealFlower(flowers.length, currentData));
+        const flower = new EtherealFlower(flowers.length, currentData);
+        flowers.push(flower);
         updateSubtitle(currentData.wish);
-        for(let i=0; i<20; i++) particles.push(new Particle(e.clientX, e.clientY, true));
+        for(let i=0; i<20; i++) {
+            particles.push(new Particle(e.clientX, e.clientY, true));
+        }
         document.getElementById('hint').style.opacity = 0;
     } else if (flowers.length === 17) {
         showFinalDate();
@@ -331,57 +363,78 @@ window.addEventListener('mousedown', (e) => {
     }
 });
 
-function updateSubtitle(wishText) {
-    const parts = wishText.split('|');
-    subLeft.style.opacity = 0;
-    subRight.style.opacity = 0;
-    subLeft.style.transform = 'translateX(-30px)';
-    subRight.style.transform = 'translateX(30px)';
-    
+function updateSubtitle(text) {
+    wishSubtitle.style.opacity = 0;
+    wishSubtitle.style.transform = 'translateY(10px)';
     setTimeout(() => {
-        subLeft.innerText = parts[0].trim();
-        subRight.innerText = parts[1] ? parts[1].trim() : "";
-        subLeft.style.opacity = 1;
-        subRight.style.opacity = 1;
-        subLeft.style.transform = 'translateX(0)';
-        subRight.style.transform = 'translateX(0)';
+        wishSubtitle.innerText = text;
+        wishSubtitle.style.transition = 'none';
+        setTimeout(() => {
+            wishSubtitle.style.transition = 'all 1.1s cubic-bezier(0.19, 1, 0.22, 1)';
+            wishSubtitle.style.opacity = 1;
+            wishSubtitle.style.transform = 'translateY(0)';
+        }, 50);
     }, 400);
 }
 
 function showFinalDate() {
-    subLeft.style.opacity = 0;
-    subRight.style.opacity = 0;
+    wishSubtitle.style.opacity = 0;
     const fd = document.getElementById('final-date');
     const fs = document.getElementById('final-sub');
     fd.style.transition = "all 5s cubic-bezier(0.19, 1, 0.22, 1)";
     fd.style.opacity = 1;
     fd.style.filter = "blur(0px)";
-    setTimeout(() => { fs.style.opacity = 0.7; fs.style.transition = "opacity 2.5s ease"; }, 2500);
-    particles.forEach(p => { p.vx = (centerX - p.x) * 0.04; p.vy = (centerY - p.y) * 0.04; });
+    setTimeout(() => {
+        fs.style.opacity = 0.5;
+        fs.style.transition = "opacity 2.5s ease";
+    }, 2500);
+    particles.forEach(p => {
+        p.vx = (centerX - p.x) * 0.04;
+        p.vy = (centerY - p.y) * 0.04;
+    });
 }
 
-window.addEventListener('mousemove', (e) => { mouse.x = e.clientX; mouse.y = e.clientY; });
+window.addEventListener('mousemove', (e) => {
+    mouse.x = e.clientX;
+    mouse.y = e.clientY;
+});
 
 function animate() {
     frame++;
     ctx.globalAlpha = 1;
-    ctx.fillStyle = 'rgba(3, 3, 6, 0.22)';
+    ctx.fillStyle = 'rgba(2, 2, 4, 0.25)';
     ctx.fillRect(0, 0, width, height);
 
     ctx.globalCompositeOperation = 'lighter';
     caustics.forEach(c => {
-        c.x += c.vx; c.y += c.vy;
+        c.x += c.vx;
+        c.y += c.vy;
         if(c.x < 0 || c.x > width) c.vx *= -1;
         if(c.y < 0 || c.y > height) c.vy *= -1;
         ctx.globalAlpha = c.opacity;
         let grad = ctx.createRadialGradient(c.x, c.y, 0, c.x, c.y, c.r);
-        grad.addColorStop(0, '#fff'); grad.addColorStop(0.3, varColors.gold); grad.addColorStop(1, 'transparent');
-        ctx.fillStyle = grad; ctx.beginPath(); ctx.arc(c.x, c.y, c.r, 0, Math.PI*2); ctx.fill();
+        grad.addColorStop(0, '#fff');
+        grad.addColorStop(0.3, varColors.gold);
+        grad.addColorStop(1, 'transparent');
+        ctx.fillStyle = grad;
+        ctx.beginPath();
+        ctx.arc(c.x, c.y, c.r, 0, Math.PI*2);
+        ctx.fill();
     });
     ctx.globalCompositeOperation = 'source-over';
 
-    particles.forEach(p => { p.update(); p.draw(); });
-    flowers.forEach(f => { if (!f.isDummy) { f.update(); f.draw(); } });
+    particles.forEach(p => {
+        p.update();
+        p.draw();
+    });
+
+    flowers.forEach(f => {
+        if (!f.isDummy) {
+            f.update();
+            f.draw();
+        }
+    });
+
     requestAnimationFrame(animate);
 }
 animate();
