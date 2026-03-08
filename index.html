@@ -1,101 +1,138 @@
 <!DOCTYPE html>
 <html lang="vi">
-
 <head>
 <meta charset="UTF-8">
-<title>8/3 Class Awards</title>
-
-<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;500;700&display=swap" rel="stylesheet">
+<title>Happy Women's Day - Class</title>
+<meta name="viewport" content="width=device-width,initial-scale=1">
 
 <style>
 
 body{
 margin:0;
-height:100vh;
-background:radial-gradient(circle,#222,#000);
+font-family:system-ui;
+background:#0a0a0a;
 color:white;
-font-family:Poppins;
 overflow:hidden;
+}
+
+#menu{
+
+position:fixed;
+top:0;
+left:0;
+right:0;
+background:#111;
+padding:10px;
 display:flex;
-justify-content:center;
-align-items:center;
-}
+gap:10px;
+flex-wrap:wrap;
+z-index:1000;
 
-#stage{
-text-align:center;
-}
-
-h1{
-font-size:50px;
-margin-bottom:10px;
-color:#ffd700;
 }
 
 button{
-padding:15px 35px;
-font-size:18px;
-border:none;
-border-radius:30px;
+
 background:#ff4da6;
+border:none;
 color:white;
+padding:8px 14px;
+border-radius:20px;
 cursor:pointer;
-transition:.3s;
-}
-
-button:hover{
-transform:scale(1.1);
-}
-
-#awardBox{
-
-margin-top:40px;
-font-size:28px;
-
-opacity:0;
-transform:scale(.5);
-transition:1s;
 
 }
 
-.show{
-opacity:1 !important;
-transform:scale(1) !important;
-}
-
-#title{
-
-font-size:36px;
-color:#ffd700;
-margin-bottom:20px;
-
-}
-
-#name{
-
-font-size:40px;
-color:#ff99cc;
-
-}
-
-.confetti{
+#stage{
 
 position:absolute;
-width:8px;
-height:8px;
-background:red;
-animation:fall linear infinite;
+top:0;
+left:0;
+right:0;
+bottom:0;
+
+}
+
+.center{
+
+position:absolute;
+top:50%;
+left:50%;
+transform:translate(-50%,-50%);
+text-align:center;
+
+}
+
+.star{
+
+position:absolute;
+width:3px;
+height:3px;
+background:white;
+border-radius:50%;
+
+}
+
+.flower{
+
+position:absolute;
+font-size:26px;
+animation:bloom 1s ease forwards;
+
+}
+
+@keyframes bloom{
+
+0%{transform:scale(0)}
+100%{transform:scale(1)}
+
+}
+
+.plane{
+
+position:absolute;
+font-size:30px;
+cursor:pointer;
+
+}
+
+.note{
+
+position:absolute;
+background:white;
+color:black;
+padding:10px;
+border-radius:8px;
+
+}
+
+.emoji{
+
+position:absolute;
+font-size:26px;
+animation:fall linear forwards;
 
 }
 
 @keyframes fall{
 
-0%{
-transform:translateY(-10vh) rotate(0);
+0%{transform:translateY(-10vh)}
+100%{transform:translateY(110vh)}
+
 }
 
-100%{
-transform:translateY(110vh) rotate(720deg);
+#typing{
+
+font-size:22px;
+white-space:pre-line;
+
 }
+
+.fire{
+
+position:absolute;
+width:4px;
+height:4px;
+background:yellow;
+border-radius:50%;
 
 }
 
@@ -105,117 +142,279 @@ transform:translateY(110vh) rotate(720deg);
 
 <body>
 
-<div id="stage">
+<div id="menu">
 
-<h1>Class Goddess Awards</h1>
-
-<button onclick="nextAward()">🎉 Bắt đầu trao giải</button>
-
-<div id="awardBox">
-
-<div id="title"></div>
-<div id="name"></div>
+<button onclick="loadIdea('sky')">Light the Sky</button>
+<button onclick="loadIdea('bloom')">Bloom Explosion</button>
+<button onclick="loadIdea('planes')">Paper Planes</button>
+<button onclick="loadIdea('emoji')">Emoji Rain</button>
+<button onclick="loadIdea('typing')">Typing Story</button>
+<button onclick="loadIdea('fireworks')">Fireworks</button>
 
 </div>
 
-</div>
+<div id="stage"></div>
 
 <script>
 
-const names=[
+const stage=document.getElementById("stage")
 
-"Quỳnh Như",
-"Châu",
-"Lan",
-"Mai",
-"Hà",
-"Vy",
-"Thảo",
-"Trâm",
-"Ngọc",
-"An",
-"Trang",
-"Linh",
-"Phương",
-"Nhi",
-"Yến",
-"Hương",
-"Tú",
-"Khánh",
-"Thư"
+function clearStage(){
 
-]
+stage.innerHTML=""
 
-const awards=[
-
-"Nữ thần chăm chỉ",
-"Nữ thần năng lượng",
-"Nữ thần dễ thương",
-"Nữ thần hài hước",
-"Nữ thần học bá",
-"Nữ thần nghệ thuật",
-"Nữ thần chill",
-"Nữ thần sáng tạo",
-"Nữ thần meme",
-"Nữ thần tích cực",
-"Nữ thần thân thiện",
-"Nữ thần bí ẩn",
-"Nữ thần đa tài"
-
-]
-
-function nextAward(){
-
-let name=names[Math.floor(Math.random()*names.length)]
-let award=awards[Math.floor(Math.random()*awards.length)]
-
-document.getElementById("title").innerText=award
-document.getElementById("name").innerText=name
-
-let box=document.getElementById("awardBox")
-
-box.classList.remove("show")
-
-setTimeout(()=>{
-
-box.classList.add("show")
-
-},100)
-
-createConfetti()
+document.onclick=null
 
 }
 
-function createConfetti(){
+/* LIGHT SKY */
+
+function ideaSky(){
+
+let stars=0
+
+stage.innerHTML="<div class='center'>Click để thắp sáng bầu trời</div>"
+
+document.onclick=function(){
+
+let s=document.createElement("div")
+
+s.className="star"
+
+s.style.left=Math.random()*100+"vw"
+s.style.top=Math.random()*100+"vh"
+
+stage.appendChild(s)
+
+stars++
+
+if(stars>120){
+
+stage.innerHTML="<div class='center'><h1>Happy Women's Day 🌸</h1><p>To all the amazing girls in our class</p></div>"
+
+}
+
+}
+
+}
+
+/* BLOOM */
+
+function ideaBloom(){
+
+stage.innerHTML="<div class='center'>Click để làm lớp nở hoa 🌸</div>"
+
+document.onclick=function(){
 
 for(let i=0;i<80;i++){
 
-let c=document.createElement("div")
+let f=document.createElement("div")
 
-c.className="confetti"
+f.className="flower"
 
-c.style.left=Math.random()*100+"vw"
+f.innerText="🌸"
 
-c.style.background=
-"hsl("+Math.random()*360+",80%,60%)"
+f.style.left=Math.random()*100+"vw"
+f.style.top=Math.random()*100+"vh"
 
-c.style.animationDuration=
-(3+Math.random()*3)+"s"
+stage.appendChild(f)
 
-document.body.appendChild(c)
+}
 
 setTimeout(()=>{
 
-c.remove()
+stage.innerHTML="<div class='center'><h1>Happy Women's Day 🌸</h1></div>"
 
-},6000)
+},2000)
+
+}
+
+}
+
+/* PLANES */
+
+const messages=[
+
+"Thanks for making the class brighter",
+"You bring so much energy",
+"Our class is lucky",
+"Stay amazing",
+"Keep shining"
+
+]
+
+function ideaPlanes(){
+
+stage.innerHTML=""
+
+for(let i=0;i<10;i++){
+
+let p=document.createElement("div")
+
+p.className="plane"
+
+p.innerText="✈️"
+
+p.style.left=Math.random()*90+"vw"
+p.style.top=Math.random()*80+"vh"
+
+p.onclick=function(e){
+
+let n=document.createElement("div")
+
+n.className="note"
+
+n.innerText=messages[Math.floor(Math.random()*messages.length)]
+
+n.style.left=e.clientX+"px"
+n.style.top=e.clientY+"px"
+
+stage.appendChild(n)
+
+}
+
+stage.appendChild(p)
 
 }
 
 }
+
+/* EMOJI */
+
+function ideaEmoji(){
+
+document.onclick=null
+
+setInterval(()=>{
+
+let e=document.createElement("div")
+
+e.className="emoji"
+
+let arr=["🌸","✨","💖","🎀","💐"]
+
+e.innerText=arr[Math.floor(Math.random()*arr.length)]
+
+e.style.left=Math.random()*100+"vw"
+
+e.style.animationDuration=3+Math.random()*3+"s"
+
+stage.appendChild(e)
+
+setTimeout(()=>e.remove(),6000)
+
+},100)
+
+stage.innerHTML="<div class='center'><h1>Happy Women's Day</h1></div>"
+
+}
+
+/* TYPING */
+
+function ideaTyping(){
+
+document.onclick=null
+
+stage.innerHTML="<div class='center' id='typing'></div>"
+
+const text=
+
+`Analyzing class environment...
+
+Detected:
+Many amazing girls
+
+Energy level: HIGH
+Kindness level: MAX
+
+Conclusion:
+Our class is lucky.
+
+Happy Women's Day 🌸`
+
+let i=0
+
+function type(){
+
+if(i<text.length){
+
+document.getElementById("typing").innerText=text.slice(0,i)
+
+i++
+
+setTimeout(type,40)
+
+}
+
+}
+
+type()
+
+}
+
+/* FIREWORKS */
+
+function ideaFireworks(){
+
+stage.innerHTML="<div class='center'><h1>Happy Women's Day 🎆</h1></div>"
+
+setInterval(()=>{
+
+let x=Math.random()*window.innerWidth
+let y=Math.random()*window.innerHeight/2
+
+for(let i=0;i<40;i++){
+
+let f=document.createElement("div")
+
+f.className="fire"
+
+f.style.left=x+"px"
+f.style.top=y+"px"
+
+let dx=(Math.random()-0.5)*200
+let dy=(Math.random()-0.5)*200
+
+f.animate([
+
+{transform:"translate(0,0)",opacity:1},
+
+{transform:`translate(${dx}px,${dy}px)`,opacity:0}
+
+],{
+
+duration:1000
+
+})
+
+stage.appendChild(f)
+
+setTimeout(()=>f.remove(),1000)
+
+}
+
+},1000)
+
+}
+
+/* loader */
+
+function loadIdea(name){
+
+clearStage()
+
+if(name==="sky") ideaSky()
+if(name==="bloom") ideaBloom()
+if(name==="planes") ideaPlanes()
+if(name==="emoji") ideaEmoji()
+if(name==="typing") ideaTyping()
+if(name==="fireworks") ideaFireworks()
+
+}
+
+loadIdea("sky")
 
 </script>
 
 </body>
-
 </html>
