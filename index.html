@@ -2,234 +2,412 @@
 <html lang="vi">
 <head>
     <meta charset="UTF-8">
-    <title>8/3 - The Unique Bloom</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>12/9 - 8/3 Infinite Bloom</title>
+    <link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@700&family=Quicksand:wght@300;600&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
     <style>
-        body {
-            margin: 0;
-            overflow: hidden;
-            background: #050505;
-            color: #fff;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            user-select: none;
-        }
-        canvas { display: block; }
-        
-        .overlay {
-            position: fixed;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            text-align: center;
-            pointer-events: none;
-            z-index: 10;
+        :root {
+            --bg: #050508;
+            --accent: #ff85a2;
+            --gold: #ffd700;
         }
 
-        h1 {
-            font-size: 15px;
-            letter-spacing: 8px;
-            text-transform: uppercase;
-            opacity: 0.6;
-            font-weight: 300;
+        body, html {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            background-color: var(--bg);
+            font-family: 'Quicksand', sans-serif;
+            cursor: crosshair;
+        }
+
+        #canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            z-index: 1;
+        }
+
+        /* UI Overlays */
+        .interface {
+            position: fixed;
+            inset: 0;
+            z-index: 10;
+            pointer-events: none;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            padding: 40px;
+            box-sizing: border-box;
+        }
+
+        .header {
+            text-align: center;
+            opacity: 0.8;
+        }
+
+        .header h1 {
+            font-family: 'Dancing Script', cursive;
+            font-size: 3.5rem;
+            color: var(--accent);
+            margin: 0;
+            text-shadow: 0 0 20px rgba(255, 133, 162, 0.5);
         }
 
         .counter {
             position: fixed;
             bottom: 30px;
             right: 30px;
-            font-size: 12px;
-            opacity: 0.3;
+            font-size: 1.2rem;
+            color: rgba(255, 255, 255, 0.4);
+            letter-spacing: 2px;
         }
 
-        #message-box {
-            position: fixed;
-            top: 40%;
-            width: 100%;
+        .instruction {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: white;
             text-align: center;
-            font-style: italic;
-            font-size: 24px;
-            color: #ffb6c1;
-            text-shadow: 0 0 20px rgba(255,182,193,0.5);
-            opacity: 0;
-            transition: all 1s ease;
+            transition: opacity 1s;
+        }
+
+        .instruction p {
+            font-weight: 300;
+            letter-spacing: 4px;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 0.3; }
+            50% { opacity: 0.8; }
+        }
+
+        /* Card Message */
+        #name-tag {
+            position: fixed;
+            padding: 10px 20px;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 5px;
+            color: white;
+            font-weight: 600;
+            pointer-events: none;
+            display: none;
+            z-index: 100;
+            border-left: 3px solid var(--accent);
+        }
+
+        #final-overlay {
+            position: fixed;
+            inset: 0;
+            background: radial-gradient(circle, rgba(255, 133, 162, 0.2) 0%, transparent 70%);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            flex-direction: column;
+        }
+
+        .final-text {
+            font-family: 'Dancing Script', cursive;
+            font-size: 8rem;
+            color: var(--gold);
+            text-shadow: 0 0 50px rgba(255, 215, 0, 0.8);
         }
     </style>
 </head>
 <body>
 
-<div class="overlay" id="intro">
-    <h1>Create your own garden</h1>
-    <p style="opacity: 0.4; font-size: 12px;">Click bất kỳ đâu để bắt đầu</p>
+<canvas id="canvas"></canvas>
+<div id="name-tag"></div>
+
+<div class="interface">
+    <div class="header">
+        <h1>Vườn Hoa 12/9</h1>
+    </div>
+    
+    <div class="instruction" id="guide">
+        <p>CHẠM ĐỂ ĐÁNH THỨC CÁC ĐÓA HOA</p>
+    </div>
+
+    <div class="counter" id="count-ui">0 / 45</div>
 </div>
 
-<div id="message-box"></div>
-<div class="counter" id="counter">BLOOMS: 0</div>
-
-<canvas id="canvas"></canvas>
+<div id="final-overlay">
+    <div class="final-text">12 / 9</div>
+    <p style="letter-spacing: 10px; color: white; opacity: 0.7;">MÃI LÀ MỘT GIA ĐÌNH</p>
+</div>
 
 <script>
+/**
+ * GENERATIVE BLOOM ART - VERSION 12/9
+ * Developed with Love & Math
+ */
+
 const canvas = document.getElementById('canvas');
 const ctx = canvas.getContext('2d');
-const msgBox = document.getElementById('message-box');
-const counterDisplay = document.getElementById('counter');
+const nameTag = document.getElementById('name-tag');
+const countUI = document.getElementById('count-ui');
 
-let width, height;
+let width, height, centerX, centerY;
 let flowers = [];
 let particles = [];
-let mouse = { x: -1000, y: -1000 };
-let count = 0;
+let butterflies = [];
+let isFinished = false;
 
-const quotes = [
-    "Dịu dàng như hơi thở của mùa xuân",
-    "Mỗi đóa hoa là một tâm hồn rực rỡ",
-    "Bạn xứng đáng với mọi điều lấp lánh nhất",
-    "Hành trình của bạn là một kiệt tác",
-    "Tỏa sáng theo cách của riêng mình",
-    "Thế giới trân trọng sự hiện diện của bạn",
-    "Mạnh mẽ như cỏ dại, thanh tao như hoa hồng",
-    "Chúc bạn một ngày 8/3 trọn vẹn yêu thương"
+// Danh sách 45 tên (Bạn hãy thay thế tên thật vào đây)
+const memberNames = [
+    "An", "Bình", "Chi", "Dương", "Đạt", "Hà", "Hương", "Hùng", "Lan", "Linh",
+    "Minh", "Nam", "Ngọc", "Oanh", "Phúc", "Quân", "Sơn", "Thảo", "Trang", "Tuấn",
+    "Vân", "Việt", "Yến", "Hoàng", "Khánh", "Long", "Mai", "Nga", "Phong", "Quỳnh",
+    "Thành", "Tiến", "Tùng", "Anh", "Bảo", "Cường", "Diệp", "Giang", "Hạnh", "Khoa",
+    "Lâm", "Nhung", "Phương", "Thắng", "12/9" 
 ];
+
+// Cấu hình toán học cho Phyllotaxis (Vòng xoáy thiên hà)
+const goldenAngle = Math.PI * (3 - Math.sqrt(5));
+const spacing = 45;
 
 function init() {
     width = window.innerWidth;
     height = window.innerHeight;
+    centerX = width / 2;
+    centerY = height / 2;
     canvas.width = width;
     canvas.height = height;
-    
-    // Khởi tạo các hạt bụi ánh sáng nền
-    for(let i = 0; i < 100; i++) {
-        particles.push({
-            x: Math.random() * width,
-            y: Math.random() * height,
-            originX: Math.random() * width,
-            originY: Math.random() * height,
-            size: Math.random() * 2,
-            color: `rgba(255, 255, 255, ${Math.random() * 0.3})`
-        });
-    }
-}
-
-class Branch {
-    constructor(x, y, angle, color, limit) {
-        this.x = x;
-        this.y = y;
-        this.angle = angle;
-        this.color = color;
-        this.limit = limit;
-        this.speed = Math.random() * 2 + 1;
-        this.curve = (Math.random() - 0.5) * 0.2;
-        this.width = Math.random() * 2 + 1;
-        this.life = 0;
-    }
-
-    draw() {
-        if (this.life >= this.limit) return;
-        
-        ctx.beginPath();
-        ctx.strokeStyle = this.color;
-        ctx.lineWidth = this.width;
-        ctx.lineCap = 'round';
-        ctx.moveTo(this.x, this.y);
-        
-        this.angle += this.curve;
-        this.x += Math.cos(this.angle) * this.speed;
-        this.y += Math.sin(this.angle) * this.speed;
-        this.life++;
-        this.width *= 0.98;
-
-        ctx.lineTo(this.x, this.y);
-        ctx.stroke();
-    }
-}
-
-class SpecialFlower {
-    constructor(x, y) {
-        this.branches = [];
-        const hue = Math.random() * 60 + 320; // Dải màu hồng - tím
-        const color = `hsla(${hue}, 80%, 70%, 0.4)`;
-        const numBranches = 12 + Math.floor(Math.random() * 8);
-        
-        for (let i = 0; i < numBranches; i++) {
-            this.branches.push(new Branch(x, y, (i / numBranches) * Math.PI * 2, color, 40 + Math.random() * 30));
-        }
-    }
-    update() {
-        this.branches.forEach(b => b.draw());
-    }
-}
-
-function showMessage() {
-    msgBox.innerText = quotes[count % quotes.length];
-    msgBox.style.opacity = '1';
-    msgBox.style.transform = 'translateY(-20px)';
-    
-    setTimeout(() => {
-        msgBox.style.opacity = '0';
-        msgBox.style.transform = 'translateY(0)';
-    }, 3000);
-}
-
-window.addEventListener('mousedown', e => {
-    document.getElementById('intro').style.opacity = '0';
-    flowers.push(new SpecialFlower(e.clientX, e.clientY));
-    count++;
-    counterDisplay.innerText = `BLOOMS: ${count}`;
-    showMessage();
-    
-    // Hiệu ứng nổ hạt tại điểm click
-    for(let i=0; i<20; i++) {
-        particles.push({
-            x: e.clientX,
-            y: e.clientY,
-            originX: e.clientX + (Math.random()-0.5)*300,
-            originY: e.clientY + (Math.random()-0.5)*300,
-            size: Math.random() * 4,
-            color: `hsla(${340 + Math.random()*40}, 100%, 70%, 0.8)`,
-            vx: (Math.random()-0.5)*10,
-            vy: (Math.random()-0.5)*10
-        });
-    }
-});
-
-window.addEventListener('mousemove', e => {
-    mouse.x = e.clientX;
-    mouse.y = e.clientY;
-});
-
-function animate() {
-    // Không clear hoàn toàn để tạo hiệu ứng vẽ chồng lấn (Generative)
-    ctx.fillStyle = 'rgba(5, 5, 5, 0.05)';
-    ctx.fillRect(0, 0, width, height);
-
-    // Xử lý hạt bụi ánh sáng
-    particles.forEach((p, i) => {
-        // Lực tương tác với chuột
-        const dx = mouse.x - p.x;
-        const dy = mouse.y - p.y;
-        const dist = Math.sqrt(dx*dx + dy*dy);
-        
-        if(dist < 150) {
-            p.x -= dx * 0.05;
-            p.y -= dy * 0.05;
-        } else {
-            p.x += (p.originX - p.x) * 0.01;
-            p.y += (p.originY - p.y) * 0.01;
-        }
-
-        ctx.fillStyle = p.color;
-        ctx.beginPath();
-        ctx.arc(p.x, p.y, p.size, 0, Math.PI*2);
-        ctx.fill();
-    });
-
-    flowers.forEach(f => f.update());
-
-    requestAnimationFrame(animate);
 }
 
 window.addEventListener('resize', init);
 init();
+
+// --- LỚP HẠT (PARTICLES) ---
+class Particle {
+    constructor(x, y, color) {
+        this.x = x;
+        this.y = y;
+        this.color = color;
+        this.size = Math.random() * 2 + 1;
+        this.vx = (Math.random() - 0.5) * 4;
+        this.vy = (Math.random() - 0.5) * 4;
+        this.alpha = 1;
+    }
+    update() {
+        this.x += this.vx;
+        this.y += this.vy;
+        this.alpha -= 0.01;
+    }
+    draw() {
+        ctx.save();
+        ctx.globalAlpha = this.alpha;
+        ctx.fillStyle = this.color;
+        ctx.shadowBlur = 10;
+        ctx.shadowColor = this.color;
+        ctx.beginPath();
+        ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.restore();
+    }
+}
+
+// --- LỚP BƯỚM (BUTTERFLIES) ---
+class Butterfly {
+    constructor() {
+        this.x = Math.random() * width;
+        this.y = Math.random() * height;
+        this.angle = Math.random() * Math.PI * 2;
+        this.velocity = 1 + Math.random() * 2;
+        this.wingSpan = 0;
+        this.wingSpeed = 0.1 + Math.random() * 0.1;
+        this.hue = Math.random() * 60 + 300; // Tông hồng tím
+    }
+    update() {
+        this.x += Math.cos(this.angle) * this.velocity;
+        this.y += Math.sin(this.angle) * this.velocity;
+        this.wingSpan += this.wingSpeed;
+        this.angle += Math.sin(this.wingSpan) * 0.05;
+
+        if (this.x < 0) this.x = width;
+        if (this.x > width) this.x = 0;
+        if (this.y < 0) this.y = height;
+        if (this.y > height) this.y = 0;
+    }
+    draw() {
+        ctx.save();
+        ctx.translate(this.x, this.y);
+        ctx.rotate(this.angle);
+        ctx.fillStyle = `hsla(${this.hue}, 100%, 70%, 0.6)`;
+        
+        let wingW = Math.abs(Math.sin(this.wingSpan)) * 10;
+        // Vẽ 2 cánh bướm
+        ctx.beginPath();
+        ctx.ellipse(0, -wingW/2, 12, wingW, 0, 0, Math.PI*2);
+        ctx.ellipse(0, wingW/2, 12, wingW, 0, 0, Math.PI*2);
+        ctx.fill();
+        ctx.restore();
+    }
+}
+
+// --- LỚP HOA (FLOWER) ---
+class Flower {
+    constructor(index) {
+        this.index = index;
+        this.name = memberNames[index];
+        this.isFinal = (index === 44);
+        
+        // Tính toán vị trí theo thuật toán Phyllotaxis
+        const r = spacing * Math.sqrt(index + 1);
+        const theta = index * goldenAngle;
+        this.x = centerX + r * Math.cos(theta);
+        this.y = centerY + r * Math.sin(theta);
+        
+        this.size = 0;
+        this.maxSize = this.isFinal ? 120 : 35 + Math.random() * 20;
+        this.petals = this.isFinal ? 12 : 6 + Math.floor(Math.random() * 4);
+        this.hue = this.isFinal ? 45 : (320 + Math.random() * 60); // Vàng cho 12/9, Hồng cho còn lại
+        this.rot = 0;
+        this.opacity = 0;
+    }
+
+    draw() {
+        ctx.save();
+        ctx.translate(this.x, this.y);
+        ctx.rotate(this.rot);
+        ctx.globalAlpha = this.opacity;
+
+        // Vẽ cuống hoa (stalk) hướng về tâm
+        ctx.strokeStyle = 'rgba(255, 255, 255, 0.1)';
+        ctx.beginPath();
+        ctx.moveTo(0, 0);
+        ctx.lineTo(centerX - this.x, centerY - this.y);
+        ctx.stroke();
+
+        // Vẽ cánh hoa
+        for (let i = 0; i < this.petals; i++) {
+            ctx.rotate((Math.PI * 2) / this.petals);
+            ctx.beginPath();
+            let grad = ctx.createRadialGradient(0, 0, 0, 0, this.size, this.size);
+            grad.addColorStop(0, `hsla(${this.hue}, 100%, 75%, 1)`);
+            grad.addColorStop(1, `hsla(${this.hue - 30}, 100%, 40%, 0)`);
+            ctx.fillStyle = grad;
+            
+            // Hình dáng cánh hoa phức tạp hơn
+            ctx.moveTo(0, 0);
+            ctx.bezierCurveTo(this.size, -this.size, this.size * 1.5, this.size / 2, 0, this.size);
+            ctx.bezierCurveTo(-this.size * 1.5, this.size / 2, -this.size, -this.size, 0, 0);
+            ctx.fill();
+        }
+
+        // Nhụy hoa
+        ctx.beginPath();
+        ctx.arc(0, 0, this.size / 4, 0, Math.PI * 2);
+        ctx.fillStyle = "white";
+        ctx.shadowBlur = 15;
+        ctx.shadowColor = "white";
+        ctx.fill();
+
+        // Tên bạn
+        if (this.size > this.maxSize * 0.8) {
+            ctx.rotate(-this.rot - (this.index * goldenAngle)); // Reset rotation để chữ nằm ngang
+            ctx.fillStyle = "rgba(255,255,255,0.9)";
+            ctx.font = `${this.isFinal ? 24 : 12}px Quicksand`;
+            ctx.textAlign = "center";
+            ctx.fillText(this.name, 0, this.size + 15);
+        }
+
+        ctx.restore();
+    }
+
+    update() {
+        if (this.size < this.maxSize) this.size += 1.5;
+        if (this.opacity < 1) this.opacity += 0.05;
+        this.rot += 0.01;
+    }
+}
+
+// Khởi tạo một vài con bướm ban đầu
+for(let i=0; i<8; i++) butterflies.push(new Butterfly());
+
+// Xử lý sự kiện click
+window.addEventListener('mousedown', (e) => {
+    if (flowers.length >= 45) return;
+
+    document.getElementById('guide').style.opacity = '0';
+    
+    let nextIndex = flowers.length;
+    let f = new Flower(nextIndex);
+    
+    // Nếu là bông cuối, đưa nó về tâm
+    if (f.isFinal) {
+        f.x = centerX;
+        f.y = centerY;
+    }
+
+    flowers.push(f);
+    countUI.innerText = `${flowers.length} / 45`;
+
+    // Nổ hạt tại vị trí click
+    for (let i = 0; i < 20; i++) {
+        particles.push(new Particle(e.clientX, e.clientY, `hsl(${f.hue}, 100%, 70%)`));
+    }
+
+    // Hiệu ứng hoàn thành
+    if (flowers.length === 45) {
+        isFinished = true;
+        setTimeout(() => {
+            gsap.to("#final-overlay", {display: 'flex', opacity: 1, duration: 2});
+        }, 1500);
+    }
+});
+
+function animate() {
+    // Tạo hiệu ứng ghosting mượt mà
+    ctx.fillStyle = 'rgba(5, 5, 8, 0.2)';
+    ctx.fillRect(0, 0, width, height);
+
+    // Cập nhật bướm
+    butterflies.forEach(b => {
+        b.update();
+        b.draw();
+    });
+
+    // Cập nhật hạt
+    particles.forEach((p, i) => {
+        p.update();
+        p.draw();
+        if (p.alpha <= 0) particles.splice(i, 1);
+    });
+
+    // Cập nhật hoa
+    flowers.forEach(f => {
+        f.update();
+        f.draw();
+    });
+
+    requestAnimationFrame(animate);
+}
+
 animate();
 
+// Hiệu ứng di chuyển chuột tạo Name Tag (Chỉ dành cho hoa đã nở)
+window.addEventListener('mousemove', (e) => {
+    let found = false;
+    flowers.forEach(f => {
+        let dist = Math.hypot(f.x - e.clientX, f.y - e.clientY);
+        if (dist < 40) {
+            nameTag.style.display = 'block';
+            nameTag.style.left = e.clientX + 20 + 'px';
+            nameTag.style.top = e.clientY + 'px';
+            nameTag.innerText = "Member: " + f.name;
+            found = true;
+        }
+    });
+    if (!found) nameTag.style.display = 'none';
+});
 </script>
 </body>
 </html>
