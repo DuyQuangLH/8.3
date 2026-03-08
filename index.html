@@ -2,417 +2,375 @@
 <html lang="vi">
 <head>
 <meta charset="UTF-8">
-<title>Happy Women's Day - Class</title>
-<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>8.3 - Garden of Light</title>
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500&family=Quicksand:wght@300;500&display=swap" rel="stylesheet">
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
 
 <style>
 
-body{
+:root{
+--pink:#ffc7d9;
+--gold:#ffe8a3;
+--bg:#0c0a12;
+}
+
+*{
 margin:0;
-font-family:system-ui;
-background:#0a0a0a;
+padding:0;
+box-sizing:border-box;
+cursor:none;
+}
+
+body{
+background:var(--bg);
 color:white;
+font-family:'Quicksand';
 overflow:hidden;
 }
 
-#menu{
-
+#canvas{
 position:fixed;
-top:0;
-left:0;
-right:0;
-background:#111;
-padding:10px;
+inset:0;
+z-index:1;
+}
+
+/* message card */
+
+.stage{
+position:fixed;
+inset:0;
 display:flex;
-gap:10px;
-flex-wrap:wrap;
-z-index:1000;
-
+justify-content:center;
+align-items:center;
+z-index:10;
+pointer-events:none;
 }
 
-button{
-
-background:#ff4da6;
-border:none;
-color:white;
-padding:8px 14px;
-border-radius:20px;
-cursor:pointer;
-
-}
-
-#stage{
+.card{
 
 position:absolute;
-top:0;
-left:0;
-right:0;
-bottom:0;
+width:80%;
+max-width:600px;
 
-}
+background:rgba(255,255,255,0.05);
+backdrop-filter:blur(20px);
 
-.center{
+border-radius:30px;
 
-position:absolute;
-top:50%;
-left:50%;
-transform:translate(-50%,-50%);
+padding:45px;
+
 text-align:center;
 
+opacity:0;
+visibility:hidden;
+
+box-shadow:0 30px 80px rgba(0,0,0,0.6);
+
 }
 
-.star{
+h2{
+font-family:'Playfair Display';
+font-size:38px;
+color:var(--pink);
+margin-bottom:20px;
+}
 
-position:absolute;
-width:3px;
-height:3px;
+p{
+font-size:18px;
+line-height:1.8;
+opacity:0.9;
+}
+
+.signature{
+margin-top:30px;
+font-size:22px;
+color:var(--gold);
+font-family:'Playfair Display';
+text-align:right;
+}
+
+/* cursor */
+
+#dot{
+width:6px;
+height:6px;
 background:white;
 border-radius:50%;
+position:fixed;
+z-index:10000;
+pointer-events:none;
+}
 
+#ring{
+width:40px;
+height:40px;
+border:1px solid var(--pink);
+border-radius:50%;
+position:fixed;
+pointer-events:none;
+z-index:9999;
+}
+
+/* entrance */
+
+.entrance{
+
+position:fixed;
+inset:0;
+background:#000;
+display:flex;
+flex-direction:column;
+justify-content:center;
+align-items:center;
+
+z-index:2000;
+
+transition:1.2s;
+
+}
+
+.entrance.hide{
+opacity:0;
+pointer-events:none;
 }
 
 .flower{
 
-position:absolute;
-font-size:26px;
-animation:bloom 1s ease forwards;
-
-}
-
-@keyframes bloom{
-
-0%{transform:scale(0)}
-100%{transform:scale(1)}
-
-}
-
-.plane{
-
-position:absolute;
-font-size:30px;
+font-size:100px;
 cursor:pointer;
+transition:.5s;
+filter:drop-shadow(0 0 20px pink);
 
 }
 
-.note{
-
-position:absolute;
-background:white;
-color:black;
-padding:10px;
-border-radius:8px;
-
-}
-
-.emoji{
-
-position:absolute;
-font-size:26px;
-animation:fall linear forwards;
-
-}
-
-@keyframes fall{
-
-0%{transform:translateY(-10vh)}
-100%{transform:translateY(110vh)}
-
-}
-
-#typing{
-
-font-size:22px;
-white-space:pre-line;
-
-}
-
-.fire{
-
-position:absolute;
-width:4px;
-height:4px;
-background:yellow;
-border-radius:50%;
-
+.flower:hover{
+transform:scale(1.2) rotate(10deg);
 }
 
 </style>
 </head>
 
-
 <body>
 
-<div id="menu">
+<div id="canvas"></div>
 
-<button onclick="loadIdea('sky')">Light the Sky</button>
-<button onclick="loadIdea('bloom')">Bloom Explosion</button>
-<button onclick="loadIdea('planes')">Paper Planes</button>
-<button onclick="loadIdea('emoji')">Emoji Rain</button>
-<button onclick="loadIdea('typing')">Typing Story</button>
-<button onclick="loadIdea('fireworks')">Fireworks</button>
+<div id="dot"></div>
+<div id="ring"></div>
+
+<div class="entrance" id="entrance">
+<div class="flower" onclick="start()">🌸</div>
+<p style="margin-top:20px;letter-spacing:4px;color:pink;">CHẠM ĐỂ VÀO KHU VƯỜN</p>
+</div>
+
+<main class="stage">
+
+<div class="card">
+<h2>8 / 3</h2>
+<p>Gửi đến những cô gái tuyệt vời của lớp.</p>
+<p>Một ngày nhỏ, nhưng mang theo rất nhiều lời chúc.</p>
+</div>
+
+<div class="card">
+<p>Cảm ơn vì đã làm cho lớp học trở nên vui hơn.</p>
+<p>Nhiều tiếng cười hơn.</p>
+<p>Và đôi khi… cũng ồn hơn một chút 😆</p>
+</div>
+
+<div class="card">
+<p>Mỗi người đều có một cách tỏa sáng rất riêng.</p>
+<p>Có người mạnh mẽ.</p>
+<p>Có người dịu dàng.</p>
+<p>Nhưng tất cả đều rất đáng quý.</p>
+</div>
+
+<div class="card">
+<p>Chúc các bạn luôn</p>
+<p><b>tự tin hơn</b></p>
+<p><b>hạnh phúc hơn</b></p>
+<p>và luôn được yêu thương.</p>
+</div>
+
+<div class="card">
+<h2>Happy Women's Day 🌸</h2>
+<p>Chúc tất cả các bạn nữ lớp mình</p>
+<p>luôn rạng rỡ như những bông hoa mùa xuân.</p>
+
+<div class="signature">
+From Duy Quang
+</div>
 
 </div>
 
-<div id="stage"></div>
+</main>
 
 <script>
 
-const stage=document.getElementById("stage")
+/* THREE */
 
-function clearStage(){
+const scene=new THREE.Scene()
 
-stage.innerHTML=""
+const camera=new THREE.PerspectiveCamera(
+65,
+window.innerWidth/window.innerHeight,
+0.1,
+1000
+)
 
-document.onclick=null
+const renderer=new THREE.WebGLRenderer({alpha:true,antialias:true})
+renderer.setSize(window.innerWidth,window.innerHeight)
 
-}
+document.getElementById("canvas").appendChild(renderer.domElement)
 
-/* LIGHT SKY */
+/* fireflies */
 
-function ideaSky(){
+const fireflyGeo=new THREE.BufferGeometry()
 
-let stars=0
+const count=600
 
-stage.innerHTML="<div class='center'>Click để thắp sáng bầu trời</div>"
+const pos=new Float32Array(count*3)
 
-document.onclick=function(){
+for(let i=0;i<count*3;i++){
 
-let s=document.createElement("div")
-
-s.className="star"
-
-s.style.left=Math.random()*100+"vw"
-s.style.top=Math.random()*100+"vh"
-
-stage.appendChild(s)
-
-stars++
-
-if(stars>120){
-
-stage.innerHTML="<div class='center'><h1>Happy Women's Day 🌸</h1><p>To all the amazing girls in our class</p></div>"
+pos[i]=(Math.random()-0.5)*80
 
 }
 
-}
+fireflyGeo.setAttribute(
+"position",
+new THREE.BufferAttribute(pos,3)
+)
+
+const fireflyMat=new THREE.PointsMaterial({
+color:0xfff4a3,
+size:0.25,
+transparent:true,
+opacity:0.8
+})
+
+const fireflies=new THREE.Points(fireflyGeo,fireflyMat)
+
+scene.add(fireflies)
+
+/* petals */
+
+const petalGeo=new THREE.BufferGeometry()
+
+const petals=1200
+
+const petalPos=new Float32Array(petals*3)
+
+for(let i=0;i<petals*3;i++){
+
+petalPos[i]=(Math.random()-0.5)*120
 
 }
 
-/* BLOOM */
+petalGeo.setAttribute(
+"position",
+new THREE.BufferAttribute(petalPos,3)
+)
 
-function ideaBloom(){
+const petalMat=new THREE.PointsMaterial({
+color:0xffc7d9,
+size:0.2,
+transparent:true
+})
 
-stage.innerHTML="<div class='center'>Click để làm lớp nở hoa 🌸</div>"
+const petalField=new THREE.Points(petalGeo,petalMat)
 
-document.onclick=function(){
+scene.add(petalField)
 
-for(let i=0;i<80;i++){
+/* camera */
 
-let f=document.createElement("div")
+camera.position.z=15
 
-f.className="flower"
+/* cards */
 
-f.innerText="🌸"
+const cards=document.querySelectorAll(".card")
 
-f.style.left=Math.random()*100+"vw"
-f.style.top=Math.random()*100+"vh"
+let current=-1
+let moving=false
 
-stage.appendChild(f)
+function next(){
+
+if(moving)return
+
+const n=current+1
+
+if(n>=cards.length)return
+
+moving=true
+
+if(current>=0){
+
+gsap.to(cards[current],{
+opacity:0,
+y:-80,
+duration:0.6,
+onComplete:()=>{
+cards[current].style.visibility="hidden"
+}
+})
 
 }
 
-setTimeout(()=>{
+current=n
 
-stage.innerHTML="<div class='center'><h1>Happy Women's Day 🌸</h1></div>"
+const card=cards[current]
 
-},2000)
+card.style.visibility="visible"
 
-}
-
-}
-
-/* PLANES */
-
-const messages=[
-
-"Thanks for making the class brighter",
-"You bring so much energy",
-"Our class is lucky",
-"Stay amazing",
-"Keep shining"
-
-]
-
-function ideaPlanes(){
-
-stage.innerHTML=""
-
-for(let i=0;i<10;i++){
-
-let p=document.createElement("div")
-
-p.className="plane"
-
-p.innerText="✈️"
-
-p.style.left=Math.random()*90+"vw"
-p.style.top=Math.random()*80+"vh"
-
-p.onclick=function(e){
-
-let n=document.createElement("div")
-
-n.className="note"
-
-n.innerText=messages[Math.floor(Math.random()*messages.length)]
-
-n.style.left=e.clientX+"px"
-n.style.top=e.clientY+"px"
-
-stage.appendChild(n)
+gsap.fromTo(
+card,
+{opacity:0,y:80},
+{opacity:1,y:0,duration:1.2,onComplete:()=>moving=false}
+)
 
 }
 
-stage.appendChild(p)
+function start(){
+
+document.getElementById("entrance").classList.add("hide")
+
+setTimeout(next,800)
 
 }
 
-}
+window.addEventListener("click",next)
 
-/* EMOJI */
+/* cursor */
 
-function ideaEmoji(){
+const dot=document.getElementById("dot")
+const ring=document.getElementById("ring")
 
-document.onclick=null
+document.addEventListener("mousemove",e=>{
 
-setInterval(()=>{
+gsap.to(dot,{x:e.clientX,y:e.clientY,duration:0})
 
-let e=document.createElement("div")
-
-e.className="emoji"
-
-let arr=["🌸","✨","💖","🎀","💐"]
-
-e.innerText=arr[Math.floor(Math.random()*arr.length)]
-
-e.style.left=Math.random()*100+"vw"
-
-e.style.animationDuration=3+Math.random()*3+"s"
-
-stage.appendChild(e)
-
-setTimeout(()=>e.remove(),6000)
-
-},100)
-
-stage.innerHTML="<div class='center'><h1>Happy Women's Day</h1></div>"
-
-}
-
-/* TYPING */
-
-function ideaTyping(){
-
-document.onclick=null
-
-stage.innerHTML="<div class='center' id='typing'></div>"
-
-const text=
-
-`Analyzing class environment...
-
-Detected:
-Many amazing girls
-
-Energy level: HIGH
-Kindness level: MAX
-
-Conclusion:
-Our class is lucky.
-
-Happy Women's Day 🌸`
-
-let i=0
-
-function type(){
-
-if(i<text.length){
-
-document.getElementById("typing").innerText=text.slice(0,i)
-
-i++
-
-setTimeout(type,40)
-
-}
-
-}
-
-type()
-
-}
-
-/* FIREWORKS */
-
-function ideaFireworks(){
-
-stage.innerHTML="<div class='center'><h1>Happy Women's Day 🎆</h1></div>"
-
-setInterval(()=>{
-
-let x=Math.random()*window.innerWidth
-let y=Math.random()*window.innerHeight/2
-
-for(let i=0;i<40;i++){
-
-let f=document.createElement("div")
-
-f.className="fire"
-
-f.style.left=x+"px"
-f.style.top=y+"px"
-
-let dx=(Math.random()-0.5)*200
-let dy=(Math.random()-0.5)*200
-
-f.animate([
-
-{transform:"translate(0,0)",opacity:1},
-
-{transform:`translate(${dx}px,${dy}px)`,opacity:0}
-
-],{
-
-duration:1000
+gsap.to(ring,{x:e.clientX-20,y:e.clientY-20,duration:.2})
 
 })
 
-stage.appendChild(f)
+/* animate */
 
-setTimeout(()=>f.remove(),1000)
+function animate(){
 
-}
+requestAnimationFrame(animate)
 
-},1000)
+fireflies.rotation.y+=0.0005
 
-}
+petalField.rotation.y+=0.0002
 
-/* loader */
-
-function loadIdea(name){
-
-clearStage()
-
-if(name==="sky") ideaSky()
-if(name==="bloom") ideaBloom()
-if(name==="planes") ideaPlanes()
-if(name==="emoji") ideaEmoji()
-if(name==="typing") ideaTyping()
-if(name==="fireworks") ideaFireworks()
+renderer.render(scene,camera)
 
 }
 
-loadIdea("sky")
+animate()
 
 </script>
 
